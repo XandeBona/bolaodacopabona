@@ -27,7 +27,6 @@ export default function AdminPage() {
   const [tab, setTab] = useState<AdminTab>('jogos')
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
 
-  // Jogos tab state
   const [jogos, setJogos] = useState<JogoComResultado[]>([])
   const [loadingJogos, setLoadingJogos] = useState(false)
   const [edits, setEdits] = useState<EditState>({})
@@ -39,7 +38,6 @@ export default function AdminPage() {
   const [liveGames, setLiveGames] = useState<any[]>([])
   const [endingLive, setEndingLive] = useState<number | null>(null)
 
-  // Participantes tab state
   const [participantes, setParticipantes] = useState<string[]>([])
   const [loadingParticipantes, setLoadingParticipantes] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -62,16 +60,12 @@ export default function AdminPage() {
       ])
       const jogosData: Jogo[] = await jogosRes.json()
       const resultadosData: Resultado[] = await resultadosRes.json()
-
       const resultadoMap = new Map(resultadosData.map((r) => [r.jogo_numero, r]))
-
       const merged: JogoComResultado[] = jogosData.map((j) => ({
         ...j,
         resultado: resultadoMap.get(j.jogo_numero),
       }))
-
       setJogos(merged)
-
       const initEdits: EditState = {}
       for (const j of merged) {
         const r = j.resultado
@@ -103,13 +97,38 @@ export default function AdminPage() {
     }
   }, [])
 
+  // ─── HOOKS MOVIDOS PARA ANTES DO RETURN CONDICIONAL ──────────────────────────
+
+  const atualizarLive = useCallback(async (jogo_numero: number, gol_a: number, gol_b: number) => {
+    try {
+      await fetch('/api/live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ jogo_numero, gol_a: Math.max(0, gol_a), gol_b: Math.max(0, gol_b) }),
+      })
+    } catch {}
+  }, [password])
+
+  const finalizarLive = useCallback(async (jogo_numero: number) => {
+    setEndingLive(jogo_numero)
+    try {
+      await fetch('/api/live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ jogo_numero, action: 'end' }),
+      })
+      setLiveGames((prev) => prev.filter((g) => g.jogo_numero !== jogo_numero))
+      fetchJogos()
+    } catch {}
+    setEndingLive(null)
+  }, [password, fetchJogos])
+
   useEffect(() => {
     if (!authed) return
     fetchJogos()
     fetchParticipantes()
   }, [authed, fetchJogos, fetchParticipantes])
 
-  // Live polling
   useEffect(() => {
     if (!authed) return
     const poll = async () => {
@@ -184,16 +203,13 @@ export default function AdminPage() {
     setUploadResult(null)
     setUploadError(null)
     try {
-      // Parse client-side so we only send JSON (~20KB) instead of the full .xlsm file
       const buffer = await file.arrayBuffer()
       const { parseExcelFile, parseJogosFromExcel } = await import('@/lib/excel-parser')
       const { participante, palpites } = parseExcelFile(buffer)
       const jogos = parseJogosFromExcel(buffer)
-
       if (palpites.length === 0) {
         throw new Error('Nenhum palpite encontrado na planilha')
       }
-
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
@@ -231,7 +247,6 @@ export default function AdminPage() {
     }
   }
 
-  // Group jogos by grupo
   const jogosByGrupo = jogos.reduce((acc, j) => {
     const key = j.grupo ?? 'Outros'
     if (!acc[key]) acc[key] = []
@@ -279,37 +294,10 @@ export default function AdminPage() {
     )
   }
 
-  // ─── Live scoring helpers ─────────────────────────────────────────────────────
-
-  const atualizarLive = useCallback(async (jogo_numero: number, gol_a: number, gol_b: number) => {
-    try {
-      await fetch('/api/live', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-        body: JSON.stringify({ jogo_numero, gol_a: Math.max(0, gol_a), gol_b: Math.max(0, gol_b) }),
-      })
-    } catch {}
-  }, [password])
-
-  const finalizarLive = useCallback(async (jogo_numero: number) => {
-    setEndingLive(jogo_numero)
-    try {
-      await fetch('/api/live', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-        body: JSON.stringify({ jogo_numero, action: 'end' }),
-      })
-      setLiveGames((prev) => prev.filter((g) => g.jogo_numero !== jogo_numero))
-      fetchJogos()
-    } catch {}
-    setEndingLive(null)
-  }, [password, fetchJogos])
-
   // ─── Admin layout ─────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-[#0c0c0e]">
-      {/* Toast */}
       {toast && (
         <div className={clsx(
           'fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium',
@@ -322,7 +310,6 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Header */}
       <header className="border-b border-stone-800 bg-stone-900/50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -341,7 +328,6 @@ export default function AdminPage() {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Tabs */}
         <div className="flex gap-1 bg-stone-900 border border-stone-800 rounded-xl p-1 mb-6 w-fit">
           <button
             onClick={() => setTab('jogos')}
@@ -373,7 +359,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* ── Jogos tab ──────────────────────────────────────────────────────────── */}
         {tab === 'jogos' && (
           <div>
             <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
@@ -444,49 +429,27 @@ export default function AdminPage() {
                         <span className="text-stone-600 text-xs">vs</span>
                         <span className="text-sm font-medium text-white truncate">{g.pais_b}</span>
                       </div>
-
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => atualizarLive(g.jogo_numero, g.gol_a - 1, g.gol_b)}
-                            className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30"
-                            disabled={g.gol_a <= 0}
-                          >
+                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a - 1, g.gol_b)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30" disabled={g.gol_a <= 0}>
                             <Minus size={12} />
                           </button>
                           <span className="text-lg font-bold font-mono text-white w-6 text-center">{g.gol_a}</span>
-                          <button
-                            onClick={() => atualizarLive(g.jogo_numero, g.gol_a + 1, g.gol_b)}
-                            className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all"
-                          >
+                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a + 1, g.gol_b)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all">
                             <Plus size={12} />
                           </button>
                         </div>
-
                         <span className="text-stone-600">×</span>
-
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b - 1)}
-                            className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30"
-                            disabled={g.gol_b <= 0}
-                          >
+                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b - 1)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30" disabled={g.gol_b <= 0}>
                             <Minus size={12} />
                           </button>
                           <span className="text-lg font-bold font-mono text-white w-6 text-center">{g.gol_b}</span>
-                          <button
-                            onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b + 1)}
-                            className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all"
-                          >
+                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b + 1)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all">
                             <Plus size={12} />
                           </button>
                         </div>
-
-                        <button
-                          onClick={() => finalizarLive(g.jogo_numero)}
-                          disabled={endingLive === g.jogo_numero}
-                          className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-emerald-900/50 hover:bg-emerald-800/50 text-emerald-400 hover:text-emerald-300 border border-emerald-800/50 transition-all disabled:opacity-50"
-                        >
+                        <button onClick={() => finalizarLive(g.jogo_numero)} disabled={endingLive === g.jogo_numero} className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-emerald-900/50 hover:bg-emerald-800/50 text-emerald-400 hover:text-emerald-300 border border-emerald-800/50 transition-all disabled:opacity-50">
                           {endingLive === g.jogo_numero ? '...' : 'Finalizar'}
                         </button>
                       </div>
@@ -506,10 +469,7 @@ export default function AdminPage() {
                 <p className="text-3xl mb-3">📋</p>
                 <p className="font-medium text-stone-400">Nenhum jogo cadastrado.</p>
                 <p className="text-sm mt-2">O calendário é importado automaticamente na primeira planilha enviada.</p>
-                <button
-                  onClick={() => setTab('participantes')}
-                  className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm underline"
-                >
+                <button onClick={() => setTab('participantes')} className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm underline">
                   Ir para Upload de Planilhas
                 </button>
               </div>
@@ -517,123 +477,51 @@ export default function AdminPage() {
               <div className="space-y-8">
                 {gruposOrdenados.map((grupo) => (
                   <div key={grupo}>
-                    {/* Group header */}
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-lg">
-                          GRUPO {grupo}
-                        </span>
-                      </div>
+                      <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-lg">
+                        GRUPO {grupo}
+                      </span>
                       <div className="flex-1 h-px bg-stone-800" />
                       <span className="text-xs text-stone-600">
                         {jogosByGrupo[grupo].filter((j) => j.resultado).length}/{jogosByGrupo[grupo].length}
                       </span>
                     </div>
-
                     <div className="space-y-2">
                       {jogosByGrupo[grupo].map((jogo) => {
                         const edit = edits[jogo.jogo_numero] ?? { gol_a: '', gol_b: '', penalti_a: '', penalti_b: '' }
                         const temResultado = !!jogo.resultado
                         const isSaving = saving === jogo.jogo_numero
-
                         return (
-                          <div
-                            key={jogo.jogo_numero}
-                            className={clsx(
-                              'flex items-center gap-3 bg-stone-900 border rounded-xl px-4 py-3 flex-wrap',
-                              temResultado ? 'border-emerald-500/20' : 'border-stone-800'
-                            )}
-                          >
-                            {/* Match number */}
-                            <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">
-                              #{jogo.jogo_numero}
-                            </span>
-
-                            {/* Teams */}
+                          <div key={jogo.jogo_numero} className={clsx('flex items-center gap-3 bg-stone-900 border rounded-xl px-4 py-3 flex-wrap', temResultado ? 'border-emerald-500/20' : 'border-stone-800')}>
+                            <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">#{jogo.jogo_numero}</span>
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <span className="font-semibold text-white text-sm truncate">{jogo.pais_a}</span>
                               <span className="text-stone-600 text-xs shrink-0">vs</span>
                               <span className="font-semibold text-white text-sm truncate">{jogo.pais_b}</span>
                             </div>
-
-                            {/* Date + Venue */}
                             {(jogo.data_hora || jogo.estadio) && (
                               <div className="hidden md:flex flex-col text-right shrink-0">
-                                {jogo.data_hora && (
-                                  <span className="text-xs text-stone-400 font-mono">{formatDataHora(jogo.data_hora)}</span>
-                                )}
-                                {jogo.estadio && (
-                                  <span className="text-xs text-stone-600 truncate max-w-40">{jogo.estadio}</span>
-                                )}
+                                {jogo.data_hora && <span className="text-xs text-stone-400 font-mono">{formatDataHora(jogo.data_hora)}</span>}
+                                {jogo.estadio && <span className="text-xs text-stone-600 truncate max-w-40">{jogo.estadio}</span>}
                               </div>
                             )}
-
-                            {/* Score inputs */}
                             <div className="flex items-center gap-2 shrink-0">
-                              <input
-                                type="number"
-                                min={0}
-                                max={99}
-                                placeholder="0"
-                                value={edit.gol_a}
-                                onChange={(e) =>
-                                  setEdits((prev) => ({ ...prev, [jogo.jogo_numero]: { ...edit, gol_a: e.target.value } }))
-                                }
-                                className="w-12 bg-stone-800 border border-stone-700 rounded-lg px-1 py-1.5 text-center font-mono font-bold text-white focus:outline-none focus:border-emerald-500 text-sm"
-                              />
+                              <input type="number" min={0} max={99} placeholder="0" value={edit.gol_a} onChange={(e) => setEdits((prev) => ({ ...prev, [jogo.jogo_numero]: { ...edit, gol_a: e.target.value } }))} className="w-12 bg-stone-800 border border-stone-700 rounded-lg px-1 py-1.5 text-center font-mono font-bold text-white focus:outline-none focus:border-emerald-500 text-sm" />
                               <span className="text-stone-600 font-bold text-xs">×</span>
-                              <input
-                                type="number"
-                                min={0}
-                                max={99}
-                                placeholder="0"
-                                value={edit.gol_b}
-                                onChange={(e) =>
-                                  setEdits((prev) => ({ ...prev, [jogo.jogo_numero]: { ...edit, gol_b: e.target.value } }))
-                                }
-                                className="w-12 bg-stone-800 border border-stone-700 rounded-lg px-1 py-1.5 text-center font-mono font-bold text-white focus:outline-none focus:border-emerald-500 text-sm"
-                              />
-
-                              <button
-                                onClick={() => saveResultado(jogo.jogo_numero)}
-                                disabled={isSaving}
-                                className={clsx(
-                                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
-                                  isSaving
-                                    ? 'bg-stone-700 text-stone-500 cursor-not-allowed'
-                                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                                )}
-                              >
+                              <input type="number" min={0} max={99} placeholder="0" value={edit.gol_b} onChange={(e) => setEdits((prev) => ({ ...prev, [jogo.jogo_numero]: { ...edit, gol_b: e.target.value } }))} className="w-12 bg-stone-800 border border-stone-700 rounded-lg px-1 py-1.5 text-center font-mono font-bold text-white focus:outline-none focus:border-emerald-500 text-sm" />
+                              <button onClick={() => saveResultado(jogo.jogo_numero)} disabled={isSaving} className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all', isSaving ? 'bg-stone-700 text-stone-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
                                 <Save size={12} />
                                 {isSaving ? '...' : 'Salvar'}
                               </button>
-
                               {temResultado && (
                                 <>
-                                  <button
-                                    onClick={() => deleteResultado(jogo.jogo_numero)}
-                                    className="p-1.5 rounded-lg text-stone-600 hover:text-red-400 hover:bg-red-950/30 transition-colors"
-                                    title="Remover resultado"
-                                  >
+                                  <button onClick={() => deleteResultado(jogo.jogo_numero)} className="p-1.5 rounded-lg text-stone-600 hover:text-red-400 hover:bg-red-950/30 transition-colors" title="Remover resultado">
                                     <Trash2 size={14} />
                                   </button>
                                   <span className="text-emerald-400 text-xs">✓</span>
                                 </>
                               )}
-
-                              <button
-                                onClick={() => {
-                                  const dt = jogo.data_hora ? new Date(jogo.data_hora) : null
-                                  setEditForm({
-                                    grupo: jogo.grupo ?? '',
-                                    data_hora: dt ? dt.toISOString().slice(0, 16) : '',
-                                    estadio: jogo.estadio ?? '',
-                                  })
-                                  setEditGameNum(jogo.jogo_numero)
-                                }}
-                                className="p-1.5 rounded-lg text-stone-600 hover:text-emerald-400 hover:bg-emerald-950/30 transition-colors"
-                                title="Editar jogo"
-                              >
+                              <button onClick={() => { const dt = jogo.data_hora ? new Date(jogo.data_hora) : null; setEditForm({ grupo: jogo.grupo ?? '', data_hora: dt ? dt.toISOString().slice(0, 16) : '', estadio: jogo.estadio ?? '' }); setEditGameNum(jogo.jogo_numero) }} className="p-1.5 rounded-lg text-stone-600 hover:text-emerald-400 hover:bg-emerald-950/30 transition-colors" title="Editar jogo">
                                 <Pencil size={14} />
                               </button>
                             </div>
@@ -648,87 +536,47 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ── Edit Game Modal ─────────────────────────────────────────────────────── */}
         {editGameNum !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
             <div className="bg-stone-900 border border-stone-700 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-bold text-white">Editar Jogo #{editGameNum}</h3>
-                <button
-                  onClick={() => setEditGameNum(null)}
-                  className="p-1 rounded-lg text-stone-500 hover:text-white hover:bg-stone-800 transition-colors"
-                >
+                <button onClick={() => setEditGameNum(null)} className="p-1 rounded-lg text-stone-500 hover:text-white hover:bg-stone-800 transition-colors">
                   <X size={16} />
                 </button>
               </div>
-
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs text-stone-400 mb-1.5">Grupo</label>
-                  <select
-                    value={editForm.grupo}
-                    onChange={(e) => setEditForm((f) => ({ ...f, grupo: e.target.value }))}
-                    className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                  >
+                  <select value={editForm.grupo} onChange={(e) => setEditForm((f) => ({ ...f, grupo: e.target.value }))} className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
                     <option value="">Sem grupo</option>
-                    {'ABCDEFGHIJKL'.split('').map((l) => (
-                      <option key={l} value={l}>Grupo {l}</option>
-                    ))}
+                    {'ABCDEFGHIJKL'.split('').map((l) => (<option key={l} value={l}>Grupo {l}</option>))}
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-xs text-stone-400 mb-1.5">Data e Hora</label>
-                  <input
-                    type="datetime-local"
-                    value={editForm.data_hora}
-                    onChange={(e) => setEditForm((f) => ({ ...f, data_hora: e.target.value }))}
-                    className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                  />
+                  <input type="datetime-local" value={editForm.data_hora} onChange={(e) => setEditForm((f) => ({ ...f, data_hora: e.target.value }))} className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
                 </div>
-
                 <div>
                   <label className="block text-xs text-stone-400 mb-1.5">Estádio</label>
-                  <input
-                    type="text"
-                    value={editForm.estadio}
-                    onChange={(e) => setEditForm((f) => ({ ...f, estadio: e.target.value }))}
-                    placeholder="Ex: Estádio Nacional"
-                    className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-emerald-500"
-                  />
+                  <input type="text" value={editForm.estadio} onChange={(e) => setEditForm((f) => ({ ...f, estadio: e.target.value }))} placeholder="Ex: Estádio Nacional" className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
-
               <div className="flex gap-2 mt-6">
-                <button
-                  onClick={() => setEditGameNum(null)}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold bg-stone-800 text-stone-400 hover:text-white transition-colors"
-                >
-                  Cancelar
-                </button>
+                <button onClick={() => setEditGameNum(null)} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold bg-stone-800 text-stone-400 hover:text-white transition-colors">Cancelar</button>
                 <button
                   onClick={async () => {
                     setSavingGame(true)
                     try {
-                      const dataHoraISO = editForm.data_hora
-                        ? new Date(editForm.data_hora).toISOString()
-                        : null
+                      const dataHoraISO = editForm.data_hora ? new Date(editForm.data_hora).toISOString() : null
                       const res = await fetch('/api/jogos', {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-                        body: JSON.stringify({
-                          jogo_numero: editGameNum,
-                          grupo: editForm.grupo || null,
-                          data_hora: dataHoraISO,
-                          estadio: editForm.estadio || null,
-                        }),
+                        body: JSON.stringify({ jogo_numero: editGameNum, grupo: editForm.grupo || null, data_hora: dataHoraISO, estadio: editForm.estadio || null }),
                       })
                       const data = await res.json()
                       showToast(data.error ?? 'Jogo atualizado!', res.ok)
-                      if (res.ok) {
-                        setEditGameNum(null)
-                        await fetchJogos()
-                      }
+                      if (res.ok) { setEditGameNum(null); await fetchJogos() }
                     } catch {
                       showToast('Erro ao salvar jogo', false)
                     } finally {
@@ -746,79 +594,38 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ── Participantes tab ──────────────────────────────────────────────────── */}
         {tab === 'participantes' && (
           <div className="space-y-8">
-            {/* Upload area */}
             <div className="max-w-lg">
               <h2 className="text-lg font-bold mb-1 text-white">Adicionar Planilha</h2>
               <p className="text-stone-400 text-sm mb-5">
-                Envie a planilha <code className="bg-stone-800 px-1.5 py-0.5 rounded text-emerald-400">.xlsm</code> de
-                cada participante. Os palpites são acumulados — cada upload substitui apenas os dados daquele participante.
-                {participantes.length === 0 && (
-                  <span className="block mt-1 text-amber-400/80">O calendário da fase de grupos será importado automaticamente na primeira planilha.</span>
-                )}
+                Envie a planilha <code className="bg-stone-800 px-1.5 py-0.5 rounded text-emerald-400">.xlsm</code> de cada participante. Os palpites são acumulados — cada upload substitui apenas os dados daquele participante.
+                {participantes.length === 0 && <span className="block mt-1 text-amber-400/80">O calendário da fase de grupos será importado automaticamente na primeira planilha.</span>}
               </p>
-
               <div
-                className={clsx(
-                  'border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer',
-                  dragOver ? 'border-emerald-500 bg-emerald-950/20' : 'border-stone-700 hover:border-stone-600'
-                )}
+                className={clsx('border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer', dragOver ? 'border-emerald-500 bg-emerald-950/20' : 'border-stone-700 hover:border-stone-600')}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
                 onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  setDragOver(false)
-                  const file = e.dataTransfer.files[0]
-                  if (file) handleUpload(file)
-                }}
+                onDrop={(e) => { e.preventDefault(); setDragOver(false); const file = e.dataTransfer.files[0]; if (file) handleUpload(file) }}
                 onClick={() => document.getElementById('file-input')?.click()}
               >
-                <input
-                  id="file-input"
-                  type="file"
-                  className="hidden"
-                  accept=".xlsx,.xlsm,.xls"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleUpload(file)
-                    e.target.value = ''
-                  }}
-                />
+                <input id="file-input" type="file" className="hidden" accept=".xlsx,.xlsm,.xls" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); e.target.value = '' }} />
                 <Upload size={32} className="mx-auto mb-3 text-stone-500" />
                 <p className="text-white font-medium">Arraste o arquivo aqui</p>
                 <p className="text-stone-500 text-sm mt-1">ou clique para selecionar</p>
                 <p className="text-stone-600 text-xs mt-3">.xlsx / .xlsm / .xls</p>
               </div>
-
-              {uploading && (
-                <div className="mt-4 text-center text-stone-400 text-sm animate-pulse">
-                  ⚽ Processando planilha...
-                </div>
-              )}
-              {uploadResult && (
-                <div className="mt-4 bg-emerald-950/50 border border-emerald-700 rounded-xl p-4 text-emerald-300 text-sm flex items-center gap-2">
-                  <CheckCircle size={16} />
-                  {uploadResult}
-                </div>
-              )}
-              {uploadError && (
-                <div className="mt-4 bg-red-950/50 border border-red-700 rounded-xl p-4 text-red-300 text-sm flex items-center gap-2">
-                  <AlertCircle size={16} />
-                  {uploadError}
-                </div>
-              )}
+              {uploading && <div className="mt-4 text-center text-stone-400 text-sm animate-pulse">⚽ Processando planilha...</div>}
+              {uploadResult && <div className="mt-4 bg-emerald-950/50 border border-emerald-700 rounded-xl p-4 text-emerald-300 text-sm flex items-center gap-2"><CheckCircle size={16} />{uploadResult}</div>}
+              {uploadError && <div className="mt-4 bg-red-950/50 border border-red-700 rounded-xl p-4 text-red-300 text-sm flex items-center gap-2"><AlertCircle size={16} />{uploadError}</div>}
             </div>
 
-            {/* Participants list */}
             <div>
               <h2 className="text-lg font-bold mb-4 text-white flex items-center gap-2">
                 <Users size={18} className="text-stone-400" />
                 Participantes cadastrados
                 <span className="text-sm font-normal text-stone-500">({participantes.length})</span>
               </h2>
-
               {loadingParticipantes ? (
                 <p className="text-stone-500 text-sm animate-pulse">Carregando...</p>
               ) : participantes.length === 0 ? (
@@ -829,29 +636,12 @@ export default function AdminPage() {
               ) : (
                 <div className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden">
                   {participantes.map((nome, i) => (
-                    <div
-                      key={nome}
-                      className={clsx(
-                        'flex items-center justify-between px-4 py-3 gap-4',
-                        i < participantes.length - 1 && 'border-b border-stone-800'
-                      )}
-                    >
+                    <div key={nome} className={clsx('flex items-center justify-between px-4 py-3 gap-4', i < participantes.length - 1 && 'border-b border-stone-800')}>
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-7 h-7 rounded-full bg-stone-800 border border-stone-700 flex items-center justify-center text-xs font-bold text-stone-400 shrink-0">
-                          {i + 1}
-                        </div>
+                        <div className="w-7 h-7 rounded-full bg-stone-800 border border-stone-700 flex items-center justify-center text-xs font-bold text-stone-400 shrink-0">{i + 1}</div>
                         <span className="text-white text-sm font-medium truncate">{nome}</span>
                       </div>
-                      <button
-                        onClick={() => deleteParticipante(nome)}
-                        disabled={deletingNome === nome}
-                        className={clsx(
-                          'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all shrink-0',
-                          deletingNome === nome
-                            ? 'text-stone-600 cursor-not-allowed'
-                            : 'text-stone-500 hover:text-red-400 hover:bg-red-950/30'
-                        )}
-                      >
+                      <button onClick={() => deleteParticipante(nome)} disabled={deletingNome === nome} className={clsx('flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all shrink-0', deletingNome === nome ? 'text-stone-600 cursor-not-allowed' : 'text-stone-500 hover:text-red-400 hover:bg-red-950/30')}>
                         <Trash2 size={12} />
                         {deletingNome === nome ? '...' : 'Remover'}
                       </button>
