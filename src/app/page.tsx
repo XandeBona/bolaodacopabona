@@ -71,7 +71,7 @@ export default function Home() {
         if (data.em_andamento > 0) {
           fetchData()
         }
-      } catch {}
+      } catch { }
     }
     const interval = setInterval(checkLive, 15000)
     return () => clearInterval(interval)
@@ -169,8 +169,9 @@ export default function Home() {
                 tab === t ? 'bg-emerald-600 text-white shadow' : 'text-stone-400 hover:text-white'
               )}
             >
-              {t === 'ranking' ? '🏅 Ranking' : t === 'palpites' ? '📋 Palpites' : t === 'jogos' ? '🏆 A Copa' : '🌍 Copa 2022'}
-            </button>
+              {t === 'ranking' ? '🏅 Ranking' : t === 'palpites' ? '📋 Palpites' : t === 'jogos' ? '🏆 A Copa' : (
+                <img src="/2022.png" alt="Copa 2022" className="w-8 h-8 rounded object-cover" />
+              )}</button>
           ))}
         </div>
 
