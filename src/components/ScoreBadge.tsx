@@ -28,9 +28,9 @@ export function ScoreBadge({ pontos, size = 'md' }: ScoreBadgeProps) {
       pontos === 1 && 'bg-sky-500/10 text-sky-400 ring-1 ring-sky-400/30',
       pontos === 0 && 'bg-stone-800 text-stone-500 ring-1 ring-stone-700',
     )}>
-      {pontos === 10 && '⚽ '}
-      {pontos >= 5 && pontos < 10 && '✓ '}
-      {pontos === 1 && '❶ '}
+      {pontos === 10 && '✓'}
+      {pontos >= 5 && pontos < 10 && '✓'}
+      {pontos === 1 && ' '}
       {pontos}pts
     </span>
   )
