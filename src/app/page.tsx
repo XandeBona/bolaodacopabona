@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { Trophy, Search, ChevronDown, Calendar } from 'lucide-react'
+import { Trophy, Search, ChevronDown } from 'lucide-react'
 import type { Palpite, Resultado, ParticipanteRanking, Jogo } from '@/types'
 import { getFaseLabel, FASES_ORDER } from '@/lib/excel-parser'
 import { RankingTable } from '@/components/RankingTable'
@@ -282,20 +282,20 @@ export default function Home() {
 
             {tab === 'copa2022' && (
               <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
-                <h2 className="text-lg font-bold mb-6 text-white flex items-center gap-2">
+                <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
                   🌍 Copa do Mundo 2022
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-stone-800">
-                        <th className="text-left py-3 px-4 text-stone-400 font-semibold w-12">#</th>
-                        <th className="text-left py-3 px-4 text-stone-400 font-semibold">Participante</th>
-                        <th className="text-center py-3 px-4 text-stone-400 font-semibold">Pontos</th>
-                        <th className="text-center py-3 px-4 text-stone-400 font-semibold">País Campeão</th>
+                      <tr className="text-xs text-stone-500 uppercase tracking-wider">
+                        <th className="text-left pb-3 pr-4 font-medium">#</th>
+                        <th className="text-left pb-3 pr-4 font-medium">Participante</th>
+                        <th className="text-right pb-3 pr-4 font-medium">Pontos</th>
+                        <th className="text-right pb-3 font-medium">País Campeão</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-stone-800/50">
                       {[
                         { pos: '🥇', nome: 'Natalia', pontos: 1000, bandeira: '🇧🇷' },
                         { pos: '🥈', nome: 'Rafael', pontos: 1000, bandeira: '🇧🇷' },
@@ -305,17 +305,32 @@ export default function Home() {
                         { pos: '6', nome: 'Blandino', pontos: 1000, bandeira: '🇦🇷' },
                         { pos: '7', nome: 'Alexandre', pontos: 1000, bandeira: '🇧🇷' },
                       ].map((row, i) => (
-                        <tr key={i} className="border-b border-stone-800/50 hover:bg-stone-800/30 transition-colors">
-                          <td className="py-3 px-4 text-lg">{row.pos}</td>
-                          <td className="py-3 px-4 text-white font-medium">{row.nome}</td>
-                          <td className="py-3 px-4 text-center font-mono font-bold text-emerald-400">{row.pontos}</td>
-                          <td className="py-3 px-4 text-center text-2xl">{row.bandeira}</td>
+                        <tr
+                          key={i}
+                          className={clsx(
+                            'group transition-colors',
+                            i === 0 && 'bg-amber-500/5',
+                            i > 0 && 'hover:bg-stone-800/40'
+                          )}
+                        >
+                          <td className="py-3 pr-4 text-stone-500 font-mono font-bold w-8">{row.pos}</td>
+                          <td className="py-3 pr-4">
+                            <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>
+                              {row.nome}
+                            </p>
+                          </td>
+                          <td className="py-3 pr-4 text-right">
+                            <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>
+                              {row.pontos}
+                            </span>
+                          </td>
+                          <td className="py-3 text-right text-2xl">{row.bandeira}</td>
                         </tr>
                       ))}
                     </tbody>
                     <tfoot>
                       <tr className="border-t-2 border-stone-700">
-                        <td colSpan={4} className="py-4 px-4 text-center font-bold text-white text-base">
+                        <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
                           🏆 Campeão: <span className="text-2xl ml-2">🇦🇷</span> <span className="text-stone-400 font-normal ml-1">Argentina</span>
                         </td>
                       </tr>
