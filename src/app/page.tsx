@@ -9,7 +9,7 @@ import { MatchCard } from '@/components/MatchCard'
 import { CalendarView } from '@/components/CalendarView'
 import clsx from 'clsx'
 
-type Tab = 'ranking' | 'palpites' | 'jogos'
+type Tab = 'ranking' | 'palpites' | 'jogos' | 'copa2022'
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>('ranking')
@@ -63,7 +63,6 @@ export default function Home() {
     fetchData(true)
   }, [fetchData])
 
-  // Live polling for ranking updates
   useEffect(() => {
     const checkLive = async () => {
       try {
@@ -161,7 +160,7 @@ export default function Home() {
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex gap-1 bg-stone-900 border border-stone-800 rounded-xl p-1 mb-6 w-fit">
-          {(['ranking', 'palpites', 'jogos'] as Tab[]).map((t) => (
+          {(['ranking', 'palpites', 'jogos', 'copa2022'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -170,7 +169,7 @@ export default function Home() {
                 tab === t ? 'bg-emerald-600 text-white shadow' : 'text-stone-400 hover:text-white'
               )}
             >
-              {t === 'ranking' ? '🏅 Ranking' : t === 'palpites' ? '📋 Palpites' : '🏆 A Copa'}
+              {t === 'ranking' ? '🏅 Ranking' : t === 'palpites' ? '📋 Palpites' : t === 'jogos' ? '🏆 A Copa' : '🌍 Copa 2022'}
             </button>
           ))}
         </div>
@@ -278,6 +277,51 @@ export default function Home() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {tab === 'copa2022' && (
+              <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
+                <h2 className="text-lg font-bold mb-6 text-white flex items-center gap-2">
+                  🌍 Copa do Mundo 2022
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-stone-800">
+                        <th className="text-left py-3 px-4 text-stone-400 font-semibold w-12">#</th>
+                        <th className="text-left py-3 px-4 text-stone-400 font-semibold">Participante</th>
+                        <th className="text-center py-3 px-4 text-stone-400 font-semibold">Pontos</th>
+                        <th className="text-center py-3 px-4 text-stone-400 font-semibold">País Campeão</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { pos: '🥇', nome: 'Natalia', pontos: 1000, bandeira: '🇧🇷' },
+                        { pos: '🥈', nome: 'Rafael', pontos: 1000, bandeira: '🇧🇷' },
+                        { pos: '🥉', nome: 'Gilmar', pontos: 1000, bandeira: '🇧🇷' },
+                        { pos: '4', nome: 'Neusa', pontos: 1000, bandeira: '🇧🇷' },
+                        { pos: '5', nome: 'Fabiane', pontos: 1000, bandeira: '🇧🇷' },
+                        { pos: '6', nome: 'Blandino', pontos: 1000, bandeira: '🇦🇷' },
+                        { pos: '7', nome: 'Alexandre', pontos: 1000, bandeira: '🇧🇷' },
+                      ].map((row, i) => (
+                        <tr key={i} className="border-b border-stone-800/50 hover:bg-stone-800/30 transition-colors">
+                          <td className="py-3 px-4 text-lg">{row.pos}</td>
+                          <td className="py-3 px-4 text-white font-medium">{row.nome}</td>
+                          <td className="py-3 px-4 text-center font-mono font-bold text-emerald-400">{row.pontos}</td>
+                          <td className="py-3 px-4 text-center text-2xl">{row.bandeira}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t-2 border-stone-700">
+                        <td colSpan={4} className="py-4 px-4 text-center font-bold text-white text-base">
+                          🏆 Campeão: <span className="text-2xl ml-2">🇦🇷</span> <span className="text-stone-400 font-normal ml-1">Argentina</span>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
             )}
           </>
