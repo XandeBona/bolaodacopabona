@@ -31,7 +31,7 @@ export function RankingTable({ ranking, positionChanges }: RankingTableProps) {
             <th className="text-left pb-3 pr-4 font-medium">#</th>
             <th className="text-left pb-3 pr-4 font-medium">Participante</th>
             <th className="text-right pb-3 pr-4 font-medium">Pontos</th>
-            <th className="text-right pb-3 pr-4 font-medium hidden sm:table-cell">⚽ Placar</th>
+            <th className="text-right pb-3 pr-4 font-medium">PE</th>
             <th className="text-right pb-3 pr-4 font-medium hidden sm:table-cell">✓ Resultado</th>
             <th className="text-right pb-3 font-medium hidden md:table-cell">Jogos</th>
           </tr>
@@ -67,7 +67,6 @@ export function RankingTable({ ranking, positionChanges }: RankingTableProps) {
                     )}>
                       {p.nome}
                     </p>
-                    {/* Progress bar */}
                     <div className="mt-1 h-1 bg-stone-800 rounded-full overflow-hidden w-32 hidden sm:block">
                       <div
                         className={clsx(
@@ -87,7 +86,7 @@ export function RankingTable({ ranking, positionChanges }: RankingTableProps) {
                     {p.pontos_total}
                   </span>
                 </td>
-                <td className="py-3 pr-4 text-right hidden sm:table-cell">
+                <td className="py-3 pr-4 text-right">
                   <span className="text-amber-400 font-mono">{p.acertos_placar}</span>
                 </td>
                 <td className="py-3 pr-4 text-right hidden sm:table-cell">
@@ -102,9 +101,8 @@ export function RankingTable({ ranking, positionChanges }: RankingTableProps) {
         </tbody>
       </table>
 
-      {/* Legend */}
       <div className="mt-4 pt-4 border-t border-stone-800 flex gap-4 text-xs text-stone-500 flex-wrap">
-        <span><span className="text-amber-400">⚽ Placar</span> = placar exato (1+1+5+3 = 10pts)</span>
+        <span><span className="text-amber-400">PE</span> = placar exato (1+1+5+3 = 10pts)</span>
         <span><span className="text-emerald-400">✓ Resultado</span> = acertou resultado (5pts + lados)</span>
         <span><span className="text-sky-400">❶ Lado</span> = acertou um lado (1pt)</span>
       </div>
