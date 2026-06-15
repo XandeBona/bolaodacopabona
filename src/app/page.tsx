@@ -354,13 +354,13 @@ export default function Home() {
                     </thead>
                     <tbody className="divide-y divide-stone-800/50">
                       {[
-                        { pos: '🥇', nome: 'Natalia', pontos: 'XXX', bandeira: '🇦🇷' },
-                        { pos: '🥈', nome: 'Gilmar', pontos: 'XXX', bandeira: '🇪🇸' },
-                        { pos: '🥉', nome: 'Rafael', pontos: 'XXX', bandeira: '🇵🇹' },
-                        { pos: '4', nome: 'Fabiane', pontos: 'XXX', bandeira: '🇩🇪' },
-                        { pos: '5', nome: 'Neusa', pontos: 'XXX', bandeira: '🇪🇸' },
-                        { pos: '6', nome: 'Blandino', pontos: 'XXX', bandeira: '🇵🇹' },
-                        { pos: '7', nome: 'Alexandre', pontos: 'XXX', bandeira: '🇫🇷' },
+                        { pos: '🥇', nome: 'Natalia', pontos: '⏳', bandeira: '🇦🇷' },
+                        { pos: '🥈', nome: 'Gilmar', pontos: '⏳', bandeira: '🇪🇸' },
+                        { pos: '🥉', nome: 'Rafael', pontos: '⏳', bandeira: '🇵🇹' },
+                        { pos: '4', nome: 'Fabiane', pontos: '⏳', bandeira: '🇩🇪' },
+                        { pos: '5', nome: 'Neusa', pontos: '⏳', bandeira: '🇪🇸' },
+                        { pos: '6', nome: 'Blandino', pontos: '⏳', bandeira: '🇵🇹' },
+                        { pos: '7', nome: 'Alexandre', pontos: '⏳', bandeira: '🇫🇷' },
                       ].map((row, i) => (
                         <tr
                           key={i}
@@ -388,7 +388,7 @@ export default function Home() {
                     <tfoot>
                       <tr className="border-t-2 border-stone-700">
                         <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
-                          🏆 Campeão: <span className="text-2xl ml-2">???</span> <span className="text-stone-400 font-normal ml-1">???</span>
+                          🏆 Campeão: <span className="text-2xl ml-2">⏳</span> <span className="text-stone-400 font-normal ml-1">⏳</span>
                         </td>
                       </tr>
                     </tfoot>
