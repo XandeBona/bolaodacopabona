@@ -170,9 +170,9 @@ export default function Home() {
               )}
             >
               {t === 'ranking' ? '🏅 Ranking' : t === 'palpites' ? '📋 Palpites' : t === 'jogos' ? (
-                <img src="/2026.png" alt="Copa 2026" className="w-10 h-10 rounded object-cover" />
-              ) : (
                 <img src="/2022.png" alt="Copa 2022" className="w-10 h-10 rounded object-cover" />
+              ) : (
+                <img src="/2026.png" alt="Copa 2026" className="w-10 h-10 rounded object-cover" />
               )}</button>
           ))}
         </div>
@@ -280,7 +280,7 @@ export default function Home() {
             {tab === 'jogos' && (
               <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
                 <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                  Copa do Mundo 2022
+                  Copa do Mundo 2026
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -294,13 +294,13 @@ export default function Home() {
                     </thead>
                     <tbody className="divide-y divide-stone-800/50">
                       {[
-                        { pos: '🥇', nome: 'Natalia', pontos: 333, bandeira: '🇧🇷' },
-                        { pos: '🥈', nome: 'Gilmar', pontos: 289, bandeira: '🇫🇷' },
-                        { pos: '🥉', nome: 'Rafael', pontos: 283, bandeira: '🇩🇪' },
-                        { pos: '4', nome: 'Fabiane', pontos: 262, bandeira: '🇩🇪' },
-                        { pos: '5', nome: 'Neusa', pontos: 260, bandeira: '🇧🇷' },
-                        { pos: '6', nome: 'Blandino', pontos: 244, bandeira: '🇵🇹' },
-                        { pos: '7', nome: 'Alexandre', pontos: 240, bandeira: '🇧🇷' },
+                        { pos: '🥇', nome: 'Natalia', pontos: 'XXX', bandeira: '🇦🇷' },
+                        { pos: '🥈', nome: 'Gilmar', pontos: 'XXX', bandeira: '🇪🇸' },
+                        { pos: '🥉', nome: 'Rafael', pontos: 'XXX', bandeira: '🇵🇹' },
+                        { pos: '4', nome: 'Fabiane', pontos: 'XXX', bandeira: '🇩🇪' },
+                        { pos: '5', nome: 'Neusa', pontos: 'XXX', bandeira: '🇪🇸' },
+                        { pos: '6', nome: 'Blandino', pontos: 'XXX', bandeira: '🇵🇹' },
+                        { pos: '7', nome: 'Alexandre', pontos: 'XXX', bandeira: '🇫🇷' },
                       ].map((row, i) => (
                         <tr
                           key={i}
@@ -328,7 +328,7 @@ export default function Home() {
                     <tfoot>
                       <tr className="border-t-2 border-stone-700">
                         <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
-                          🏆 Campeão: <span className="text-2xl ml-2">🇦🇷</span> <span className="text-stone-400 font-normal ml-1">Argentina</span>
+                          🏆 Campeão: <span className="text-2xl ml-2">???</span> <span className="text-stone-400 font-normal ml-1">???</span>
                         </td>
                       </tr>
                     </tfoot>
