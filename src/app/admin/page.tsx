@@ -20,6 +20,42 @@ function formatDataHora(iso: string | null): string {
     ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
+function paisParaCodigo(pais: string): string {
+  const map: Record<string, string> = {
+    // América do Norte
+    'Canadá': 'ca', 'Estados Unidos': 'us', 'México': 'mx',
+    // América do Sul
+    'Argentina': 'ar', 'Brasil': 'br', 'Colômbia': 'co',
+    'Equador': 'ec', 'Paraguai': 'py', 'Uruguai': 'uy',
+    // Europa
+    'Alemanha': 'de', 'Áustria': 'at', 'Bélgica': 'be',
+    'Bósnia e Herzegovina': 'ba', 'Croácia': 'hr', 'Escócia': 'gb-sct',
+    'Espanha': 'es', 'França': 'fr', 'Holanda': 'nl', 'Países Baixos': 'nl',
+    'Inglaterra': 'gb-eng', 'Noruega': 'no', 'Portugal': 'pt',
+    'República Tcheca': 'cz', 'Suécia': 'se', 'Suíça': 'ch', 'Turquia': 'tr',
+    // África
+    'África do Sul': 'za', 'Argélia': 'dz', 'Cabo Verde': 'cv',
+    'Costa do Marfim': 'ci', 'Egito': 'eg', 'Gana': 'gh',
+    'Marrocos': 'ma', 'RD Congo': 'cd', 'Senegal': 'sn',
+    // Ásia
+    'Arábia Saudita': 'sa', 'Austrália': 'au', 'Catar': 'qa',
+    'Coreia do Sul': 'kr', 'Irã': 'ir', 'Iraque': 'iq',
+    'Japão': 'jp', 'Jordânia': 'jo', 'Uzbequistão': 'uz',
+    // CONCACAF
+    'Curaçao': 'cw', 'Haiti': 'ht', 'Panamá': 'pa',
+    // Outros comuns
+    'Itália': 'it', 'Polônia': 'pl', 'Dinamarca': 'dk', 'Sérvia': 'rs',
+    'Ucrânia': 'ua', 'Grécia': 'gr', 'Hungria': 'hu', 'Chile': 'cl',
+    'Peru': 'pe', 'Venezuela': 've', 'Bolívia': 'bo', 'Costa Rica': 'cr',
+    'Honduras': 'hn', 'Guatemala': 'gt', 'Jamaica': 'jm', 'Qatar': 'qa',
+    'Nigéria': 'ng', 'Tunísia': 'tn', 'Camarões': 'cm', 'China': 'cn',
+    'Índia': 'in', 'Irlanda': 'ie', 'País de Gales': 'gb-wls',
+    'Nova Zelândia': 'nz', 'Romênia': 'ro', 'Eslováquia': 'sk',
+    'Eslovênia': 'si', 'Albânia': 'al', 'Geórgia': 'ge',
+  }
+  return map[pais] ?? 'un'
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
@@ -96,8 +132,6 @@ export default function AdminPage() {
       setLoadingParticipantes(false)
     }
   }, [])
-
-  // ─── HOOKS MOVIDOS PARA ANTES DO RETURN CONDICIONAL ──────────────────────────
 
   const atualizarLive = useCallback(async (jogo_numero: number, gol_a: number, gol_b: number) => {
     try {
@@ -207,9 +241,7 @@ export default function AdminPage() {
       const { parseExcelFile, parseJogosFromExcel } = await import('@/lib/excel-parser')
       const { participante, palpites } = parseExcelFile(buffer)
       const jogos = parseJogosFromExcel(buffer)
-      if (palpites.length === 0) {
-        throw new Error('Nenhum palpite encontrado na planilha')
-      }
+      if (palpites.length === 0) throw new Error('Nenhum palpite encontrado na planilha')
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
@@ -257,8 +289,6 @@ export default function AdminPage() {
   const gruposOrdenados = Object.keys(jogosByGrupo).sort((a, b) => a.localeCompare(b))
   const totalComResultado = jogos.filter((j) => j.resultado).length
 
-  // ─── Login screen ────────────────────────────────────────────────────────────
-
   if (!authed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0c0c0e]">
@@ -281,10 +311,7 @@ export default function AdminPage() {
               />
               {authError && <p className="text-red-400 text-xs mt-1">{authError}</p>}
             </div>
-            <button
-              type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
+            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
               <Lock size={16} />
               Entrar
             </button>
@@ -294,16 +321,12 @@ export default function AdminPage() {
     )
   }
 
-  // ─── Admin layout ─────────────────────────────────────────────────────────────
-
   return (
     <div className="min-h-screen bg-[#0c0c0e]">
       {toast && (
         <div className={clsx(
           'fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium',
-          toast.ok
-            ? 'bg-emerald-900 border border-emerald-700 text-emerald-300'
-            : 'bg-red-900 border border-red-700 text-red-300'
+          toast.ok ? 'bg-emerald-900 border border-emerald-700 text-emerald-300' : 'bg-red-900 border border-red-700 text-red-300'
         )}>
           {toast.ok ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
           {toast.msg}
@@ -317,10 +340,7 @@ export default function AdminPage() {
             <span className="text-stone-700">|</span>
             <h1 className="font-bold text-white">Admin</h1>
           </div>
-          <button
-            onClick={() => { setAuthed(false); setPassword('') }}
-            className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-white transition-colors"
-          >
+          <button onClick={() => { setAuthed(false); setPassword('') }} className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-white transition-colors">
             <LogOut size={14} />
             Sair
           </button>
@@ -329,30 +349,15 @@ export default function AdminPage() {
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex gap-1 bg-stone-900 border border-stone-800 rounded-xl p-1 mb-6 w-fit">
-          <button
-            onClick={() => setTab('jogos')}
-            className={clsx(
-              'flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all',
-              tab === 'jogos' ? 'bg-emerald-600 text-white' : 'text-stone-400 hover:text-white'
-            )}
-          >
+          <button onClick={() => setTab('jogos')} className={clsx('flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all', tab === 'jogos' ? 'bg-emerald-600 text-white' : 'text-stone-400 hover:text-white')}>
             <Calendar size={14} />
             Jogos da Copa
           </button>
-          <button
-            onClick={() => setTab('participantes')}
-            className={clsx(
-              'flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all',
-              tab === 'participantes' ? 'bg-emerald-600 text-white' : 'text-stone-400 hover:text-white'
-            )}
-          >
+          <button onClick={() => setTab('participantes')} className={clsx('flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all', tab === 'participantes' ? 'bg-emerald-600 text-white' : 'text-stone-400 hover:text-white')}>
             <Users size={14} />
             Participantes
             {participantes.length > 0 && (
-              <span className={clsx(
-                'text-xs px-1.5 py-0.5 rounded-full',
-                tab === 'participantes' ? 'bg-emerald-500 text-white' : 'bg-stone-700 text-stone-300'
-              )}>
+              <span className={clsx('text-xs px-1.5 py-0.5 rounded-full', tab === 'participantes' ? 'bg-emerald-500 text-white' : 'bg-stone-700 text-stone-300')}>
                 {participantes.length}
               </span>
             )}
@@ -364,21 +369,14 @@ export default function AdminPage() {
             <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
               <div>
                 <h2 className="text-lg font-bold text-white">Fase de Grupos</h2>
-                <p className="text-stone-500 text-sm mt-0.5">
-                  {totalComResultado} de {jogos.length} jogos com resultado
-                </p>
+                <p className="text-stone-500 text-sm mt-0.5">{totalComResultado} de {jogos.length} jogos com resultado</p>
               </div>
               {jogos.length > 0 && (
                 <div className="flex items-center gap-2">
                   <div className="w-40 bg-stone-800 rounded-full h-1.5">
-                    <div
-                      className="bg-emerald-500 h-1.5 rounded-full transition-all"
-                      style={{ width: `${jogos.length ? (totalComResultado / jogos.length) * 100 : 0}%` }}
-                    />
+                    <div className="bg-emerald-500 h-1.5 rounded-full transition-all" style={{ width: `${jogos.length ? (totalComResultado / jogos.length) * 100 : 0}%` }} />
                   </div>
-                  <span className="text-xs text-stone-500">
-                    {jogos.length ? Math.round((totalComResultado / jogos.length) * 100) : 0}%
-                  </span>
+                  <span className="text-xs text-stone-500">{jogos.length ? Math.round((totalComResultado / jogos.length) * 100) : 0}%</span>
                 </div>
               )}
             </div>
@@ -389,10 +387,7 @@ export default function AdminPage() {
                   onClick={async () => {
                     setFixingGrupos(true)
                     try {
-                      const res = await fetch('/api/setup-grupos', {
-                        method: 'POST',
-                        headers: { 'x-admin-password': password },
-                      })
+                      const res = await fetch('/api/setup-grupos', { method: 'POST', headers: { 'x-admin-password': password } })
                       const data = await res.json()
                       showToast(data.message, res.ok)
                       if (res.ok) await fetchJogos()
@@ -408,9 +403,7 @@ export default function AdminPage() {
                   <RefreshCw size={12} className={fixingGrupos ? 'animate-spin' : ''} />
                   {fixingGrupos ? 'Corrigindo...' : 'Corrigir grupos'}
                 </button>
-                <span className="text-xs text-stone-600">
-                  Aplica a lista manual de 12 grupos nos jogos da fase de grupos
-                </span>
+                <span className="text-xs text-stone-600">Aplica a lista manual de 12 grupos nos jogos da fase de grupos</span>
               </div>
             )}
 
@@ -425,29 +418,23 @@ export default function AdminPage() {
                     <div key={g.jogo_numero} className="bg-stone-800/50 border border-stone-800 rounded-lg p-4 flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-xs text-stone-500 font-mono shrink-0">#{g.jogo_numero}</span>
-                        <span className="text-sm font-medium text-white truncate">{g.pais_a}</span>
+                        <span className="text-sm font-medium text-white truncate hidden sm:inline">{g.pais_a}</span>
+                        <img src={`https://flagcdn.com/32x24/${paisParaCodigo(g.pais_a)}.png`} alt={g.pais_a} className="h-5 rounded-sm sm:hidden shrink-0" />
                         <span className="text-stone-600 text-xs">vs</span>
-                        <span className="text-sm font-medium text-white truncate">{g.pais_b}</span>
+                        <span className="text-sm font-medium text-white truncate hidden sm:inline">{g.pais_b}</span>
+                        <img src={`https://flagcdn.com/32x24/${paisParaCodigo(g.pais_b)}.png`} alt={g.pais_b} className="h-5 rounded-sm sm:hidden shrink-0" />
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
-                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a - 1, g.gol_b)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30" disabled={g.gol_a <= 0}>
-                            <Minus size={12} />
-                          </button>
+                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a - 1, g.gol_b)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30" disabled={g.gol_a <= 0}><Minus size={12} /></button>
                           <span className="text-lg font-bold font-mono text-white w-6 text-center">{g.gol_a}</span>
-                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a + 1, g.gol_b)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all">
-                            <Plus size={12} />
-                          </button>
+                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a + 1, g.gol_b)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all"><Plus size={12} /></button>
                         </div>
                         <span className="text-stone-600">×</span>
                         <div className="flex items-center gap-1">
-                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b - 1)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30" disabled={g.gol_b <= 0}>
-                            <Minus size={12} />
-                          </button>
+                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b - 1)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30" disabled={g.gol_b <= 0}><Minus size={12} /></button>
                           <span className="text-lg font-bold font-mono text-white w-6 text-center">{g.gol_b}</span>
-                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b + 1)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all">
-                            <Plus size={12} />
-                          </button>
+                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b + 1)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all"><Plus size={12} /></button>
                         </div>
                         <button onClick={() => finalizarLive(g.jogo_numero)} disabled={endingLive === g.jogo_numero} className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-emerald-900/50 hover:bg-emerald-800/50 text-emerald-400 hover:text-emerald-300 border border-emerald-800/50 transition-all disabled:opacity-50">
                           {endingLive === g.jogo_numero ? '...' : 'Finalizar'}
@@ -469,22 +456,16 @@ export default function AdminPage() {
                 <p className="text-3xl mb-3">📋</p>
                 <p className="font-medium text-stone-400">Nenhum jogo cadastrado.</p>
                 <p className="text-sm mt-2">O calendário é importado automaticamente na primeira planilha enviada.</p>
-                <button onClick={() => setTab('participantes')} className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm underline">
-                  Ir para Upload de Planilhas
-                </button>
+                <button onClick={() => setTab('participantes')} className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm underline">Ir para Upload de Planilhas</button>
               </div>
             ) : (
               <div className="space-y-8">
                 {gruposOrdenados.map((grupo) => (
                   <div key={grupo}>
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-lg">
-                        GRUPO {grupo}
-                      </span>
+                      <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-1 rounded-lg">GRUPO {grupo}</span>
                       <div className="flex-1 h-px bg-stone-800" />
-                      <span className="text-xs text-stone-600">
-                        {jogosByGrupo[grupo].filter((j) => j.resultado).length}/{jogosByGrupo[grupo].length}
-                      </span>
+                      <span className="text-xs text-stone-600">{jogosByGrupo[grupo].filter((j) => j.resultado).length}/{jogosByGrupo[grupo].length}</span>
                     </div>
                     <div className="space-y-2">
                       {jogosByGrupo[grupo].map((jogo) => {
@@ -495,9 +476,11 @@ export default function AdminPage() {
                           <div key={jogo.jogo_numero} className={clsx('flex items-center gap-3 bg-stone-900 border rounded-xl px-4 py-3 flex-wrap', temResultado ? 'border-emerald-500/20' : 'border-stone-800')}>
                             <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">#{jogo.jogo_numero}</span>
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="font-semibold text-white text-sm truncate">{jogo.pais_a}</span>
+                              <span className="font-semibold text-white text-sm truncate hidden sm:inline">{jogo.pais_a}</span>
+                              <img src={`https://flagcdn.com/32x24/${paisParaCodigo(jogo.pais_a)}.png`} alt={jogo.pais_a} className="h-5 rounded-sm sm:hidden shrink-0" />
                               <span className="text-stone-600 text-xs shrink-0">vs</span>
-                              <span className="font-semibold text-white text-sm truncate">{jogo.pais_b}</span>
+                              <span className="font-semibold text-white text-sm truncate hidden sm:inline">{jogo.pais_b}</span>
+                              <img src={`https://flagcdn.com/32x24/${paisParaCodigo(jogo.pais_b)}.png`} alt={jogo.pais_b} className="h-5 rounded-sm sm:hidden shrink-0" />
                             </div>
                             {(jogo.data_hora || jogo.estadio) && (
                               <div className="hidden md:flex flex-col text-right shrink-0">
@@ -515,9 +498,7 @@ export default function AdminPage() {
                               </button>
                               {temResultado && (
                                 <>
-                                  <button onClick={() => deleteResultado(jogo.jogo_numero)} className="p-1.5 rounded-lg text-stone-600 hover:text-red-400 hover:bg-red-950/30 transition-colors" title="Remover resultado">
-                                    <Trash2 size={14} />
-                                  </button>
+                                  <button onClick={() => deleteResultado(jogo.jogo_numero)} className="p-1.5 rounded-lg text-stone-600 hover:text-red-400 hover:bg-red-950/30 transition-colors" title="Remover resultado"><Trash2 size={14} /></button>
                                   <span className="text-emerald-400 text-xs">✓</span>
                                 </>
                               )}
@@ -541,9 +522,7 @@ export default function AdminPage() {
             <div className="bg-stone-900 border border-stone-700 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-bold text-white">Editar Jogo #{editGameNum}</h3>
-                <button onClick={() => setEditGameNum(null)} className="p-1 rounded-lg text-stone-500 hover:text-white hover:bg-stone-800 transition-colors">
-                  <X size={16} />
-                </button>
+                <button onClick={() => setEditGameNum(null)} className="p-1 rounded-lg text-stone-500 hover:text-white hover:bg-stone-800 transition-colors"><X size={16} /></button>
               </div>
               <div className="space-y-4">
                 <div>
