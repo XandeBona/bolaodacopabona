@@ -22,28 +22,21 @@ function formatDataHora(iso: string | null): string {
 
 function paisParaCodigo(pais: string): string {
   const map: Record<string, string> = {
-    // América do Norte
     'Canadá': 'ca', 'Estados Unidos': 'us', 'México': 'mx',
-    // América do Sul
     'Argentina': 'ar', 'Brasil': 'br', 'Colômbia': 'co',
     'Equador': 'ec', 'Paraguai': 'py', 'Uruguai': 'uy',
-    // Europa
     'Alemanha': 'de', 'Áustria': 'at', 'Bélgica': 'be',
     'Bósnia e Herzegovina': 'ba', 'Croácia': 'hr', 'Escócia': 'gb-sct',
     'Espanha': 'es', 'França': 'fr', 'Holanda': 'nl', 'Países Baixos': 'nl',
     'Inglaterra': 'gb-eng', 'Noruega': 'no', 'Portugal': 'pt',
     'República Tcheca': 'cz', 'Suécia': 'se', 'Suíça': 'ch', 'Turquia': 'tr',
-    // África
     'África do Sul': 'za', 'Argélia': 'dz', 'Cabo Verde': 'cv',
     'Costa do Marfim': 'ci', 'Egito': 'eg', 'Gana': 'gh',
     'Marrocos': 'ma', 'RD Congo': 'cd', 'Senegal': 'sn',
-    // Ásia
     'Arábia Saudita': 'sa', 'Austrália': 'au', 'Catar': 'qa',
     'Coreia do Sul': 'kr', 'Irã': 'ir', 'Iraque': 'iq',
     'Japão': 'jp', 'Jordânia': 'jo', 'Uzbequistão': 'uz',
-    // CONCACAF
     'Curaçao': 'cw', 'Haiti': 'ht', 'Panamá': 'pa',
-    // Outros comuns
     'Itália': 'it', 'Polônia': 'pl', 'Dinamarca': 'dk', 'Sérvia': 'rs',
     'Ucrânia': 'ua', 'Grécia': 'gr', 'Hungria': 'hu', 'Chile': 'cl',
     'Peru': 'pe', 'Venezuela': 've', 'Bolívia': 'bo', 'Costa Rica': 'cr',
@@ -140,7 +133,7 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
         body: JSON.stringify({ jogo_numero, gol_a: Math.max(0, gol_a), gol_b: Math.max(0, gol_b) }),
       })
-    } catch {}
+    } catch { }
   }, [password])
 
   const finalizarLive = useCallback(async (jogo_numero: number) => {
@@ -153,7 +146,7 @@ export default function AdminPage() {
       })
       setLiveGames((prev) => prev.filter((g) => g.jogo_numero !== jogo_numero))
       fetchJogos()
-    } catch {}
+    } catch { }
     setEndingLive(null)
   }, [password, fetchJogos])
 
@@ -170,7 +163,7 @@ export default function AdminPage() {
         const res = await fetch('/api/live')
         const data = await res.json()
         if (data.live) setLiveGames(data.live)
-      } catch {}
+      } catch { }
     }
     poll()
     const interval = setInterval(poll, 10000)
@@ -477,10 +470,10 @@ export default function AdminPage() {
                             <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">#{jogo.jogo_numero}</span>
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <span className="font-semibold text-white text-sm truncate hidden sm:inline">{jogo.pais_a}</span>
-                              <img src={`https://flagcdn.com/32x24/${paisParaCodigo(jogo.pais_a)}.png`} alt={jogo.pais_a} className="h-5 rounded-sm sm:hidden shrink-0" />
+                              <img src={`https://flagcdn.com/32x24/${paisParaCodigo(jogo.pais_a)}.png`} alt={jogo.pais_a} className="h-5 rounded-sm sm:hidden shrink-0" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                               <span className="text-stone-600 text-xs shrink-0">vs</span>
                               <span className="font-semibold text-white text-sm truncate hidden sm:inline">{jogo.pais_b}</span>
-                              <img src={`https://flagcdn.com/32x24/${paisParaCodigo(jogo.pais_b)}.png`} alt={jogo.pais_b} className="h-5 rounded-sm sm:hidden shrink-0" />
+                              <img src={`https://flagcdn.com/32x24/${paisParaCodigo(jogo.pais_b)}.png`} alt={jogo.pais_b} className="h-5 rounded-sm sm:hidden shrink-0" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                             </div>
                             {(jogo.data_hora || jogo.estadio) && (
                               <div className="hidden md:flex flex-col text-right shrink-0">
