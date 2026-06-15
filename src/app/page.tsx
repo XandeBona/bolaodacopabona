@@ -300,13 +300,13 @@ export default function Home() {
                     </thead>
                     <tbody className="divide-y divide-stone-800/50">
                       {[
-                        { pos: '🥇', nome: 'Natalia', pontos: 1000, bandeira: '🇧🇷' },
-                        { pos: '🥈', nome: 'Rafael', pontos: 1000, bandeira: '🇧🇷' },
-                        { pos: '🥉', nome: 'Gilmar', pontos: 1000, bandeira: '🇧🇷' },
-                        { pos: '4', nome: 'Neusa', pontos: 1000, bandeira: '🇧🇷' },
-                        { pos: '5', nome: 'Fabiane', pontos: 1000, bandeira: '🇧🇷' },
-                        { pos: '6', nome: 'Blandino', pontos: 1000, bandeira: '🇦🇷' },
-                        { pos: '7', nome: 'Alexandre', pontos: 1000, bandeira: '🇧🇷' },
+                        { pos: '🥇', nome: 'Natalia', pontos: 333, bandeira: '🇧🇷' },
+                        { pos: '🥈', nome: 'Gilmar', pontos: 289, bandeira: '🇫🇷' },
+                        { pos: '🥉', nome: 'Rafael', pontos: 283, bandeira: '🇩🇪' },
+                        { pos: '4', nome: 'Fabiane', pontos: 262, bandeira: '🇩🇪' },
+                        { pos: '5', nome: 'Neusa', pontos: 260, bandeira: '🇧🇷' },
+                        { pos: '6', nome: 'Blandino', pontos: 244, bandeira: '🇵🇹' },
+                        { pos: '7', nome: 'Alexandre', pontos: 240, bandeira: '🇧🇷' },
                       ].map((row, i) => (
                         <tr
                           key={i}
