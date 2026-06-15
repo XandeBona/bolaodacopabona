@@ -280,7 +280,7 @@ export default function Home() {
             {tab === 'jogos' && (
               <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
                 <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                  Copa do Mundo 2026
+                  Copa do Mundo 2022
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -340,7 +340,7 @@ export default function Home() {
             {tab === 'copa2022' && (
               <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
                 <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                  Copa do Mundo 2022
+                  Copa do Mundo 2026
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
