@@ -1,3 +1,4 @@
+import 'flag-icons/css/flag-icons.min.css'
 import type { Metadata } from 'next'
 import './globals.css'
 
