@@ -26,13 +26,13 @@ function paisParaCodigo(pais: string): string {
     'Argentina': 'ar', 'Brasil': 'br', 'Colômbia': 'co',
     'Equador': 'ec', 'Paraguai': 'py', 'Uruguai': 'uy',
     'Alemanha': 'de', 'Áustria': 'at', 'Bélgica': 'be',
-    'Bósnia e Herzegovina': 'ba', 'Croácia': 'hr', 'Escócia': 'gb-sct',
+    'Bósnia': 'ba', 'Croácia': 'hr', 'Escócia': 'gb-sct',
     'Espanha': 'es', 'França': 'fr', 'Holanda': 'nl', 'Países Baixos': 'nl',
     'Inglaterra': 'gb-eng', 'Noruega': 'no', 'Portugal': 'pt',
     'República Tcheca': 'cz', 'Suécia': 'se', 'Suíça': 'ch', 'Turquia': 'tr',
     'África do Sul': 'za', 'Argélia': 'dz', 'Cabo Verde': 'cv',
     'Costa do Marfim': 'ci', 'Egito': 'eg', 'Gana': 'gh',
-    'Marrocos': 'ma', 'RD Congo': 'cd', 'Senegal': 'sn',
+    'Marrocos': 'ma', 'Congo': 'cd', 'Senegal': 'sn',
     'Arábia Saudita': 'sa', 'Austrália': 'au', 'Catar': 'qa',
     'Coreia do Sul': 'kr', 'Irã': 'ir', 'Iraque': 'iq',
     'Japão': 'jp', 'Jordânia': 'jo', 'Uzbequistão': 'uz',
@@ -47,6 +47,18 @@ function paisParaCodigo(pais: string): string {
     'Eslovênia': 'si', 'Albânia': 'al', 'Geórgia': 'ge',
   }
   return map[pais] ?? 'un'
+}
+
+function FlagImg({ pais }: { pais: string }) {
+  const code = paisParaCodigo(pais)
+  return (
+    <img
+      src={`https://flagcdn.com/32x24/${code}.png`}
+      alt={pais}
+      className="h-5 rounded-sm shrink-0"
+      onError={(e) => { e.currentTarget.style.display = 'none' }}
+    />
+  )
 }
 
 export default function AdminPage() {
@@ -411,11 +423,11 @@ export default function AdminPage() {
                     <div key={g.jogo_numero} className="bg-stone-800/50 border border-stone-800 rounded-lg p-4 flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-xs text-stone-500 font-mono shrink-0">#{g.jogo_numero}</span>
-                        <span className="text-sm font-medium text-white truncate hidden sm:inline">{g.pais_a}</span>
-                        <img src={`https://flagcdn.com/32x24/${paisParaCodigo(g.pais_a)}.png`} alt={g.pais_a} className="h-5 rounded-sm sm:hidden shrink-0" />
+                        <FlagImg pais={g.pais_a} />
+                        <span className="text-sm font-medium text-white truncate">{g.pais_a}</span>
                         <span className="text-stone-600 text-xs">vs</span>
-                        <span className="text-sm font-medium text-white truncate hidden sm:inline">{g.pais_b}</span>
-                        <img src={`https://flagcdn.com/32x24/${paisParaCodigo(g.pais_b)}.png`} alt={g.pais_b} className="h-5 rounded-sm sm:hidden shrink-0" />
+                        <FlagImg pais={g.pais_b} />
+                        <span className="text-sm font-medium text-white truncate">{g.pais_b}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
@@ -469,11 +481,11 @@ export default function AdminPage() {
                           <div key={jogo.jogo_numero} className={clsx('flex items-center gap-3 bg-stone-900 border rounded-xl px-4 py-3 flex-wrap', temResultado ? 'border-emerald-500/20' : 'border-stone-800')}>
                             <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">#{jogo.jogo_numero}</span>
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="font-semibold text-white text-sm truncate hidden sm:inline">{jogo.pais_a}</span>
-                              <img src={`https://flagcdn.com/32x24/${paisParaCodigo(jogo.pais_a)}.png`} alt={jogo.pais_a} className="h-5 rounded-sm sm:hidden shrink-0" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                              <FlagImg pais={jogo.pais_a} />
+                              <span className="font-semibold text-white text-sm truncate">{jogo.pais_a}</span>
                               <span className="text-stone-600 text-xs shrink-0">vs</span>
-                              <span className="font-semibold text-white text-sm truncate hidden sm:inline">{jogo.pais_b}</span>
-                              <img src={`https://flagcdn.com/32x24/${paisParaCodigo(jogo.pais_b)}.png`} alt={jogo.pais_b} className="h-5 rounded-sm sm:hidden shrink-0" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                              <FlagImg pais={jogo.pais_b} />
+                              <span className="font-semibold text-white text-sm truncate">{jogo.pais_b}</span>
                             </div>
                             {(jogo.data_hora || jogo.estadio) && (
                               <div className="hidden md:flex flex-col text-right shrink-0">
