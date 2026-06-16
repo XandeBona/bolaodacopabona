@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Upload, Save, Trash2, LogOut, CheckCircle, AlertCircle, Lock, Users, Calendar, RefreshCw, Pencil, X, Plus, Minus, Radio } from 'lucide-react'
+import { Upload, Save, Trash2, LogOut, CheckCircle, AlertCircle, Lock, Users, Calendar, RefreshCw, Pencil, X } from 'lucide-react'
 import type { Jogo, Resultado } from '@/types'
+import { FlagOnly } from '@/lib/countryFlags'
 import clsx from 'clsx'
 
 type AdminTab = 'jogos' | 'participantes'
@@ -20,47 +21,6 @@ function formatDataHora(iso: string | null): string {
     ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
-function paisParaCodigo(pais: string): string {
-  const map: Record<string, string> = {
-    'Canadá': 'ca', 'Estados Unidos': 'us', 'México': 'mx',
-    'Argentina': 'ar', 'Brasil': 'br', 'Colômbia': 'co',
-    'Equador': 'ec', 'Paraguai': 'py', 'Uruguai': 'uy',
-    'Alemanha': 'de', 'Áustria': 'at', 'Bélgica': 'be',
-    'Bósnia': 'ba', 'Croácia': 'hr', 'Escócia': 'gb-sct',
-    'Espanha': 'es', 'França': 'fr', 'Holanda': 'nl', 'Países Baixos': 'nl',
-    'Inglaterra': 'gb-eng', 'Noruega': 'no', 'Portugal': 'pt',
-    'República Tcheca': 'cz', 'Suécia': 'se', 'Suíça': 'ch', 'Turquia': 'tr',
-    'África do Sul': 'za', 'Argélia': 'dz', 'Cabo Verde': 'cv',
-    'Costa do Marfim': 'ci', 'Egito': 'eg', 'Gana': 'gh',
-    'Marrocos': 'ma', 'Congo': 'cd', 'Senegal': 'sn',
-    'Arábia Saudita': 'sa', 'Austrália': 'au', 'Catar': 'qa',
-    'Coreia do Sul': 'kr', 'Irã': 'ir', 'Iraque': 'iq',
-    'Japão': 'jp', 'Jordânia': 'jo', 'Uzbequistão': 'uz',
-    'Curaçao': 'cw', 'Haiti': 'ht', 'Panamá': 'pa',
-    'Itália': 'it', 'Polônia': 'pl', 'Dinamarca': 'dk', 'Sérvia': 'rs',
-    'Ucrânia': 'ua', 'Grécia': 'gr', 'Hungria': 'hu', 'Chile': 'cl',
-    'Peru': 'pe', 'Venezuela': 've', 'Bolívia': 'bo', 'Costa Rica': 'cr',
-    'Honduras': 'hn', 'Guatemala': 'gt', 'Jamaica': 'jm', 'Qatar': 'qa',
-    'Nigéria': 'ng', 'Tunísia': 'tn', 'Camarões': 'cm', 'China': 'cn',
-    'Índia': 'in', 'Irlanda': 'ie', 'País de Gales': 'gb-wls',
-    'Nova Zelândia': 'nz', 'Romênia': 'ro', 'Eslováquia': 'sk',
-    'Eslovênia': 'si', 'Albânia': 'al', 'Geórgia': 'ge',
-  }
-  return map[pais] ?? 'un'
-}
-
-function FlagImg({ pais }: { pais: string }) {
-  const code = paisParaCodigo(pais)
-  return (
-    <img
-      src={`https://flagcdn.com/32x24/${code}.png`}
-      alt={pais}
-      className="h-5 rounded-sm shrink-0"
-      onError={(e) => { e.currentTarget.style.display = 'none' }}
-    />
-  )
-}
-
 export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
@@ -76,8 +36,6 @@ export default function AdminPage() {
   const [editGameNum, setEditGameNum] = useState<number | null>(null)
   const [editForm, setEditForm] = useState({ grupo: '', data_hora: '', estadio: '' })
   const [savingGame, setSavingGame] = useState(false)
-  const [liveGames, setLiveGames] = useState<any[]>([])
-  const [endingLive, setEndingLive] = useState<number | null>(null)
 
   const [participantes, setParticipantes] = useState<string[]>([])
   const [loadingParticipantes, setLoadingParticipantes] = useState(false)
@@ -138,49 +96,11 @@ export default function AdminPage() {
     }
   }, [])
 
-  const atualizarLive = useCallback(async (jogo_numero: number, gol_a: number, gol_b: number) => {
-    try {
-      await fetch('/api/live', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-        body: JSON.stringify({ jogo_numero, gol_a: Math.max(0, gol_a), gol_b: Math.max(0, gol_b) }),
-      })
-    } catch { }
-  }, [password])
-
-  const finalizarLive = useCallback(async (jogo_numero: number) => {
-    setEndingLive(jogo_numero)
-    try {
-      await fetch('/api/live', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-        body: JSON.stringify({ jogo_numero, action: 'end' }),
-      })
-      setLiveGames((prev) => prev.filter((g) => g.jogo_numero !== jogo_numero))
-      fetchJogos()
-    } catch { }
-    setEndingLive(null)
-  }, [password, fetchJogos])
-
   useEffect(() => {
     if (!authed) return
     fetchJogos()
     fetchParticipantes()
   }, [authed, fetchJogos, fetchParticipantes])
-
-  useEffect(() => {
-    if (!authed) return
-    const poll = async () => {
-      try {
-        const res = await fetch('/api/live')
-        const data = await res.json()
-        if (data.live) setLiveGames(data.live)
-      } catch { }
-    }
-    poll()
-    const interval = setInterval(poll, 10000)
-    return () => clearInterval(interval)
-  }, [authed])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -412,45 +332,6 @@ export default function AdminPage() {
               </div>
             )}
 
-            {liveGames.length > 0 && (
-              <div className="bg-stone-900 border border-red-800/50 rounded-xl p-5 space-y-4">
-                <h3 className="flex items-center gap-2 text-sm font-bold text-red-400">
-                  <Radio size={14} className="animate-ping" />
-                  AO VIVO ({liveGames.length})
-                </h3>
-                <div className="grid gap-3">
-                  {liveGames.map((g: any) => (
-                    <div key={g.jogo_numero} className="bg-stone-800/50 border border-stone-800 rounded-lg p-4 flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="text-xs text-stone-500 font-mono shrink-0">#{g.jogo_numero}</span>
-                        <FlagImg pais={g.pais_a} />
-                        <span className="text-sm font-medium text-white truncate">{g.pais_a}</span>
-                        <span className="text-stone-600 text-xs">vs</span>
-                        <FlagImg pais={g.pais_b} />
-                        <span className="text-sm font-medium text-white truncate">{g.pais_b}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a - 1, g.gol_b)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30" disabled={g.gol_a <= 0}><Minus size={12} /></button>
-                          <span className="text-lg font-bold font-mono text-white w-6 text-center">{g.gol_a}</span>
-                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a + 1, g.gol_b)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all"><Plus size={12} /></button>
-                        </div>
-                        <span className="text-stone-600">×</span>
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b - 1)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all disabled:opacity-30" disabled={g.gol_b <= 0}><Minus size={12} /></button>
-                          <span className="text-lg font-bold font-mono text-white w-6 text-center">{g.gol_b}</span>
-                          <button onClick={() => atualizarLive(g.jogo_numero, g.gol_a, g.gol_b + 1)} className="p-1 rounded bg-stone-700 hover:bg-stone-600 text-stone-400 hover:text-white transition-all"><Plus size={12} /></button>
-                        </div>
-                        <button onClick={() => finalizarLive(g.jogo_numero)} disabled={endingLive === g.jogo_numero} className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-emerald-900/50 hover:bg-emerald-800/50 text-emerald-400 hover:text-emerald-300 border border-emerald-800/50 transition-all disabled:opacity-50">
-                          {endingLive === g.jogo_numero ? '...' : 'Finalizar'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {loadingJogos ? (
               <div className="text-center py-16 text-stone-500">
                 <div className="text-3xl animate-bounce mb-3">⚽</div>
@@ -481,10 +362,10 @@ export default function AdminPage() {
                           <div key={jogo.jogo_numero} className={clsx('flex items-center gap-3 bg-stone-900 border rounded-xl px-4 py-3 flex-wrap', temResultado ? 'border-emerald-500/20' : 'border-stone-800')}>
                             <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">#{jogo.jogo_numero}</span>
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <FlagImg pais={jogo.pais_a} />
+                              <FlagOnly name={jogo.pais_a} />
                               <span className="font-semibold text-white text-sm truncate">{jogo.pais_a}</span>
                               <span className="text-stone-600 text-xs shrink-0">vs</span>
-                              <FlagImg pais={jogo.pais_b} />
+                              <FlagOnly name={jogo.pais_b} />
                               <span className="font-semibold text-white text-sm truncate">{jogo.pais_b}</span>
                             </div>
                             {(jogo.data_hora || jogo.estadio) && (
