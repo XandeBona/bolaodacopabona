@@ -328,7 +328,7 @@ export default function AdminPage() {
                   <RefreshCw size={12} className={fixingGrupos ? 'animate-spin' : ''} />
                   {fixingGrupos ? 'Corrigindo...' : 'Corrigir grupos'}
                 </button>
-                <span className="text-xs text-stone-600">Aplica a lista manual de 12 grupos nos jogos da fase de grupos</span>
+                <span className="text-xs text-stone-600 hidden sm:inline">Aplica a lista manual de 12 grupos nos jogos da fase de grupos</span>
               </div>
             )}
 
@@ -359,36 +359,68 @@ export default function AdminPage() {
                         const temResultado = !!jogo.resultado
                         const isSaving = saving === jogo.jogo_numero
                         return (
-                          <div key={jogo.jogo_numero} className={clsx('flex items-center gap-3 bg-stone-900 border rounded-xl px-4 py-3 flex-wrap', temResultado ? 'border-emerald-500/20' : 'border-stone-800')}>
-                            <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">#{jogo.jogo_numero}</span>
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div
+                            key={jogo.jogo_numero}
+                            className={clsx(
+                              'bg-stone-900 border rounded-xl px-4 py-3',
+                              temResultado ? 'border-emerald-500/20' : 'border-stone-800'
+                            )}
+                          >
+                            {/* Linha 1: número + times */}
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">#{jogo.jogo_numero}</span>
                               <FlagOnly name={jogo.pais_a} />
                               <span className="font-semibold text-white text-sm truncate">{jogo.pais_a}</span>
                               <span className="text-stone-600 text-xs shrink-0">vs</span>
                               <FlagOnly name={jogo.pais_b} />
                               <span className="font-semibold text-white text-sm truncate">{jogo.pais_b}</span>
+                              {(jogo.data_hora || jogo.estadio) && (
+                                <div className="hidden md:flex flex-col text-right ml-auto shrink-0">
+                                  {jogo.data_hora && <span className="text-xs text-stone-400 font-mono">{formatDataHora(jogo.data_hora)}</span>}
+                                  {jogo.estadio && <span className="text-xs text-stone-600 truncate max-w-40">{jogo.estadio}</span>}
+                                </div>
+                              )}
                             </div>
-                            {(jogo.data_hora || jogo.estadio) && (
-                              <div className="hidden md:flex flex-col text-right shrink-0">
-                                {jogo.data_hora && <span className="text-xs text-stone-400 font-mono">{formatDataHora(jogo.data_hora)}</span>}
-                                {jogo.estadio && <span className="text-xs text-stone-600 truncate max-w-40">{jogo.estadio}</span>}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 shrink-0">
-                              <input type="number" min={0} max={99} placeholder="0" value={edit.gol_a} onChange={(e) => setEdits((prev) => ({ ...prev, [jogo.jogo_numero]: { ...edit, gol_a: e.target.value } }))} className="w-12 bg-stone-800 border border-stone-700 rounded-lg px-1 py-1.5 text-center font-mono font-bold text-white focus:outline-none focus:border-emerald-500 text-sm" />
+                            {/* Linha 2: placar + ações */}
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number" min={0} max={99} placeholder="0"
+                                value={edit.gol_a}
+                                onChange={(e) => setEdits((prev) => ({ ...prev, [jogo.jogo_numero]: { ...edit, gol_a: e.target.value } }))}
+                                className="w-14 bg-stone-800 border border-stone-700 rounded-lg px-1 py-1.5 text-center font-mono font-bold text-white focus:outline-none focus:border-emerald-500 text-sm"
+                              />
                               <span className="text-stone-600 font-bold text-xs">×</span>
-                              <input type="number" min={0} max={99} placeholder="0" value={edit.gol_b} onChange={(e) => setEdits((prev) => ({ ...prev, [jogo.jogo_numero]: { ...edit, gol_b: e.target.value } }))} className="w-12 bg-stone-800 border border-stone-700 rounded-lg px-1 py-1.5 text-center font-mono font-bold text-white focus:outline-none focus:border-emerald-500 text-sm" />
-                              <button onClick={() => saveResultado(jogo.jogo_numero)} disabled={isSaving} className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all', isSaving ? 'bg-stone-700 text-stone-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
+                              <input
+                                type="number" min={0} max={99} placeholder="0"
+                                value={edit.gol_b}
+                                onChange={(e) => setEdits((prev) => ({ ...prev, [jogo.jogo_numero]: { ...edit, gol_b: e.target.value } }))}
+                                className="w-14 bg-stone-800 border border-stone-700 rounded-lg px-1 py-1.5 text-center font-mono font-bold text-white focus:outline-none focus:border-emerald-500 text-sm"
+                              />
+                              <button
+                                onClick={() => saveResultado(jogo.jogo_numero)}
+                                disabled={isSaving}
+                                className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all', isSaving ? 'bg-stone-700 text-stone-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}
+                              >
                                 <Save size={12} />
                                 {isSaving ? '...' : 'Salvar'}
                               </button>
                               {temResultado && (
                                 <>
-                                  <button onClick={() => deleteResultado(jogo.jogo_numero)} className="p-1.5 rounded-lg text-stone-600 hover:text-red-400 hover:bg-red-950/30 transition-colors" title="Remover resultado"><Trash2 size={14} /></button>
+                                  <button onClick={() => deleteResultado(jogo.jogo_numero)} className="p-1.5 rounded-lg text-stone-600 hover:text-red-400 hover:bg-red-950/30 transition-colors" title="Remover resultado">
+                                    <Trash2 size={14} />
+                                  </button>
                                   <span className="text-emerald-400 text-xs">✓</span>
                                 </>
                               )}
-                              <button onClick={() => { const dt = jogo.data_hora ? new Date(jogo.data_hora) : null; setEditForm({ grupo: jogo.grupo ?? '', data_hora: dt ? dt.toISOString().slice(0, 16) : '', estadio: jogo.estadio ?? '' }); setEditGameNum(jogo.jogo_numero) }} className="p-1.5 rounded-lg text-stone-600 hover:text-emerald-400 hover:bg-emerald-950/30 transition-colors" title="Editar jogo">
+                              <button
+                                onClick={() => {
+                                  const dt = jogo.data_hora ? new Date(jogo.data_hora) : null
+                                  setEditForm({ grupo: jogo.grupo ?? '', data_hora: dt ? dt.toISOString().slice(0, 16) : '', estadio: jogo.estadio ?? '' })
+                                  setEditGameNum(jogo.jogo_numero)
+                                }}
+                                className="p-1.5 rounded-lg text-stone-600 hover:text-emerald-400 hover:bg-emerald-950/30 transition-colors ml-auto"
+                                title="Editar jogo"
+                              >
                                 <Pencil size={14} />
                               </button>
                             </div>
