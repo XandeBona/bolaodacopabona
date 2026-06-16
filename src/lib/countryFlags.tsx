@@ -68,3 +68,13 @@ export function TeamWithFlag({ name, className = '' }: { name: string | null | u
     </span>
   )
 }
+
+export function FlagOnly({ name, className = '' }: { name: string | null | undefined; className?: string }) {
+  if (!name) return <span className="text-stone-600">─</span>
+  const flagClass = getFlagClass(name)
+  return (
+    <>
+      {flagClass && <span className={`${flagClass} rounded-sm`} style={{ width: 20, height: 15, fontSize: 20, display: 'inline-block', verticalAlign: 'middle' }} />}
+    </>
+  )
+}

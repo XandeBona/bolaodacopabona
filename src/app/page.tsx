@@ -1,5 +1,6 @@
 'use client'
 
+import { TeamWithFlag, FlagOnly } from '@/lib/countryFlags'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Trophy, Search, ChevronDown } from 'lucide-react'
 import type { Palpite, Resultado, ParticipanteRanking, Jogo } from '@/types'
@@ -9,7 +10,7 @@ import { MatchCard } from '@/components/MatchCard'
 import { CalendarView } from '@/components/CalendarView'
 import clsx from 'clsx'
 
-type Tab = 'ranking' | 'palpites' | 'jogos' | 'copa2022'
+type Tab = 'ranking' | 'palpites' | 'copa2022' | 'copa2026'
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>('ranking')
@@ -160,7 +161,7 @@ export default function Home() {
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex gap-1 bg-stone-900 border border-stone-800 rounded-xl p-1 mb-6 w-fit">
-          {(['ranking', 'palpites', 'jogos', 'copa2022'] as Tab[]).map((t) => (
+          {(['ranking', 'palpites', 'copa2022', 'copa2026'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -169,7 +170,7 @@ export default function Home() {
                 tab === t ? 'bg-emerald-600 text-white shadow' : 'text-stone-400 hover:text-white'
               )}
             >
-              {t === 'ranking' ? '🏅 Ranking' : t === 'palpites' ? '📋 Palpites' : t === 'jogos' ? (
+              {t === 'ranking' ? '🏅 Ranking' : t === 'palpites' ? '📋 Palpites' : t === 'copa2022' ? (
                 <img src="/2022.png" alt="Copa 2022" className="w-10 h-10 rounded object-cover" />
               ) : (
                 <img src="/2026.png" alt="Copa 2026" className="w-10 h-10 rounded object-cover" />
@@ -277,7 +278,7 @@ export default function Home() {
               </div>
             )}
 
-            {tab === 'jogos' && (
+            {tab === 'copa2022' && (
               <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
                 <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
                   Copa do Mundo 2022
@@ -294,13 +295,13 @@ export default function Home() {
                     </thead>
                     <tbody className="divide-y divide-stone-800/50">
                       {[
-                        { pos: '🥇', nome: 'Natalia', pontos: 333, bandeira: '🇧🇷' },
-                        { pos: '🥈', nome: 'Gilmar', pontos: 289, bandeira: '🇫🇷' },
-                        { pos: '🥉', nome: 'Rafael', pontos: 283, bandeira: '🇩🇪' },
-                        { pos: '4', nome: 'Fabiane', pontos: 262, bandeira: '🇩🇪' },
-                        { pos: '5', nome: 'Neusa', pontos: 260, bandeira: '🇧🇷' },
-                        { pos: '6', nome: 'Blandino', pontos: 244, bandeira: '🇵🇹' },
-                        { pos: '7', nome: 'Alexandre', pontos: 240, bandeira: '🇧🇷' },
+                        { pos: '🥇', nome: 'Natalia', pontos: 333, pais: 'Brasil' },
+                        { pos: '🥈', nome: 'Gilmar', pontos: 289, pais: 'França' },
+                        { pos: '🥉', nome: 'Rafael', pontos: 283, pais: 'Alemanha' },
+                        { pos: '4', nome: 'Fabiane', pontos: 262, pais: 'Alemanha' },
+                        { pos: '5', nome: 'Neusa', pontos: 260, pais: 'Brasil' },
+                        { pos: '6', nome: 'Blandino', pontos: 244, pais: 'Portugal' },
+                        { pos: '7', nome: 'Alexandre', pontos: 240, pais: 'Brasil' },
                       ].map((row, i) => (
                         <tr
                           key={i}
@@ -321,14 +322,16 @@ export default function Home() {
                               {row.pontos}
                             </span>
                           </td>
-                          <td className="py-3 text-right text-2xl">{row.bandeira}</td>
+                          <td className="py-3 text-right">
+                            <FlagOnly name={row.pais} className="justify-end text-stone-300" />
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                     <tfoot>
                       <tr className="border-t-2 border-stone-700">
                         <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
-                          🏆 Campeão: <span className="text-2xl ml-2">🇦🇷</span> <span className="text-stone-400 font-normal ml-1">Argentina</span>
+                          🏆 Campeão: <FlagOnly name="Argentina" className="inline-flex text-stone-400 font-normal ml-2" />
                         </td>
                       </tr>
                     </tfoot>
@@ -337,7 +340,7 @@ export default function Home() {
               </div>
             )}
 
-            {tab === 'copa2022' && (
+            {tab === 'copa2026' && (
               <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
                 <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
                   Copa do Mundo 2026
@@ -354,13 +357,13 @@ export default function Home() {
                     </thead>
                     <tbody className="divide-y divide-stone-800/50">
                       {[
-                        { pos: '🥇', nome: 'Natalia', pontos: '⏳', bandeira: '🇦🇷' },
-                        { pos: '🥈', nome: 'Gilmar', pontos: '⏳', bandeira: '🇪🇸' },
-                        { pos: '🥉', nome: 'Rafael', pontos: '⏳', bandeira: '🇵🇹' },
-                        { pos: '4', nome: 'Fabiane', pontos: '⏳', bandeira: '🇩🇪' },
-                        { pos: '5', nome: 'Neusa', pontos: '⏳', bandeira: '🇪🇸' },
-                        { pos: '6', nome: 'Blandino', pontos: '⏳', bandeira: '🇵🇹' },
-                        { pos: '7', nome: 'Alexandre', pontos: '⏳', bandeira: '🇫🇷' },
+                        { pos: '🥇', nome: 'Natalia', pontos: '⏳', pais: 'Argentina' },
+                        { pos: '🥈', nome: 'Gilmar', pontos: '⏳', pais: 'Espanha' },
+                        { pos: '🥉', nome: 'Rafael', pontos: '⏳', pais: 'Portugal' },
+                        { pos: '4', nome: 'Fabiane', pontos: '⏳', pais: 'Alemanha' },
+                        { pos: '5', nome: 'Neusa', pontos: '⏳', pais: 'Espanha' },
+                        { pos: '6', nome: 'Blandino', pontos: '⏳', pais: 'Portugal' },
+                        { pos: '7', nome: 'Alexandre', pontos: '⏳', pais: 'França' },
                       ].map((row, i) => (
                         <tr
                           key={i}
@@ -381,14 +384,16 @@ export default function Home() {
                               {row.pontos}
                             </span>
                           </td>
-                          <td className="py-3 text-right text-2xl">{row.bandeira}</td>
+                          <td className="py-3 text-right">
+                            <FlagOnly name={row.pais} className="justify-end text-stone-300" />
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                     <tfoot>
                       <tr className="border-t-2 border-stone-700">
                         <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
-                          🏆 Campeão: <span className="text-2xl ml-2">⏳</span> <span className="text-stone-400 font-normal ml-1">⏳</span>
+                          🏆 Campeão: <span className="text-stone-400 font-normal ml-2">⏳</span>
                         </td>
                       </tr>
                     </tfoot>
@@ -396,15 +401,15 @@ export default function Home() {
                 </div>
               </div>
             )}
+
+            <footer className="border-t border-stone-800 mt-16 py-6 text-center text-xs text-stone-600">
+              <a href="/admin" className="hover:text-stone-400 transition-colors">
+                Área Admin
+              </a>
+            </footer>
           </>
         )}
       </div>
-
-      <footer className="border-t border-stone-800 mt-16 py-6 text-center text-xs text-stone-600">
-        <a href="/admin" className="hover:text-stone-400 transition-colors">
-          Área Admin
-        </a>
-      </footer>
     </div>
   )
 }
