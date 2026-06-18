@@ -21,3 +21,9 @@ body {
     radial-gradient(ellipse at 50% 0%, rgba(22, 101, 52, 0.3) 0%, transparent 70%),
     linear-gradient(180deg, #0c1a0f 0%, #0c0c0e 100%);
 }
+
+.ocean-header {
+  background: 
+    radial-gradient(ellipse at 50% 0%, rgba(30, 64, 175, 0.3) 0%, transparent 70%),
+    linear-gradient(180deg, #0c1530 0%, #0c0c0e 100%);
+}

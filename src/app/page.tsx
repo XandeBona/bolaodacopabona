@@ -403,9 +403,15 @@ export default function Home() {
             )}
 
             <footer className="border-t border-stone-800 mt-16 py-6 text-center text-xs text-stone-600">
-              <a href="/admin" className="hover:text-stone-400 transition-colors">
-                Área Admin
-              </a>
+              <div className="flex items-center justify-center gap-4">
+                <a href="/admin" className="hover:text-stone-400 transition-colors">
+                  Área Admin
+                </a>
+                <span className="text-stone-700">|</span>
+                <a href="/tc" className="hover:text-stone-400 transition-colors">
+                  TC
+                </a>
+              </div>
             </footer>
           </>
         )}
