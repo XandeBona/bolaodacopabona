@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react'
 import type { Palpite, Resultado, ParticipanteRanking, Jogo } from '@/types'
 import clsx from 'clsx'
 
-type Tab = 'copa2022' | 'copa2026'
+type Tab = 'copa2022' | 'copa2026' | 'champions2627' | 'mundial2029'
 
 export default function Home() {
     const [tab, setTab] = useState<Tab>('copa2022')
@@ -78,7 +78,7 @@ export default function Home() {
 
             <div className="max-w-6xl mx-auto px-4 py-6">
                 <div className="flex gap-1 bg-stone-900 border border-stone-800 rounded-xl p-1 mb-6 w-fit">
-                    {(['copa2022', 'copa2026'] as Tab[]).map((t) => (
+                    {(['copa2022', 'copa2026', 'champions2627', 'mundial2029'] as Tab[]).map((t) => (
                         <button
                             key={t}
                             onClick={() => setTab(t)}
@@ -89,9 +89,14 @@ export default function Home() {
                         >
                             {t === 'copa2022' ? (
                                 <img src="/2022.png" alt="Copa 2022" className="w-10 h-10 rounded object-cover" />
-                            ) : (
+                            ) : t === 'copa2026' ? (
                                 <img src="/2026.png" alt="Copa 2026" className="w-10 h-10 rounded object-cover" />
-                            )}</button>
+                            ) : t === 'champions2627' ? (
+                                <img src="/champions.png" alt="Champions League 26/27" className="w-10 h-10 rounded object-cover" />
+                            ) : (
+                                <img src="/mundial2029.png" alt="Mundial 2029" className="w-10 h-10 rounded object-cover" />
+                            )}
+                        </button>
                     ))}
                 </div>
 
@@ -202,6 +207,144 @@ export default function Home() {
                                                 { pos: '12', nome: 'Luizinho', pontos: '⏳', pais: 'Brasil' },
                                                 { pos: '13', nome: 'Matheus', pontos: '⏳', pais: 'Brasil' },
                                                 { pos: '14', nome: 'Tesoro', pontos: '⏳', pais: 'Brasil' },
+                                            ].map((row, i) => (
+                                                <tr
+                                                    key={i}
+                                                    className={clsx(
+                                                        'group transition-colors',
+                                                        i === 0 && 'bg-amber-500/5',
+                                                        i > 0 && 'hover:bg-stone-800/40'
+                                                    )}
+                                                >
+                                                    <td className="py-3 pr-4 text-stone-500 font-mono font-bold w-8">{row.pos}</td>
+                                                    <td className="py-3 pr-4">
+                                                        <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>
+                                                            {row.nome}
+                                                        </p>
+                                                    </td>
+                                                    <td className="py-3 pr-4 text-right">
+                                                        <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>
+                                                            {row.pontos}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 text-right">
+                                                        <FlagOnly name={row.pais} className="justify-end text-stone-300" />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="border-t-2 border-stone-700">
+                                                <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
+                                                    🏆 Campeão: <span className="text-stone-400 font-normal ml-2">⏳</span>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {tab === 'champions2627' && (
+                            <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
+                                <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
+                                    Champions League 2026/2027
+                                </h2>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="text-xs text-stone-500 uppercase tracking-wider">
+                                                <th className="text-left pb-3 pr-4 font-medium">#</th>
+                                                <th className="text-left pb-3 pr-4 font-medium">Participante</th>
+                                                <th className="text-right pb-3 pr-4 font-medium">Pontos</th>
+                                                <th className="text-right pb-3 font-medium">Time Campeão</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-stone-800/50">
+                                            {[
+                                                { pos: '🥇', nome: 'Alexandre', pontos: '⏳', pais: '⏳' },
+                                                { pos: '🥈', nome: 'Caio', pontos: '⏳', pais: '⏳' },
+                                                { pos: '🥉', nome: 'Carlos', pontos: '⏳', pais: '⏳' },
+                                                { pos: '4', nome: 'Cristian', pontos: '⏳', pais: '⏳' },
+                                                { pos: '5', nome: 'Felipe', pontos: '⏳', pais: '⏳' },
+                                                { pos: '6', nome: 'Geovani', pontos: '⏳', pais: '⏳' },
+                                                { pos: '7', nome: 'Giovanella', pontos: '⏳', pais: '⏳' },
+                                                { pos: '8', nome: 'Groto', pontos: '⏳', pais: '⏳' },
+                                                { pos: '9', nome: 'Tiso', pontos: '⏳', pais: '⏳' },
+                                                { pos: '10', nome: 'Klitzke', pontos: '⏳', pais: '⏳' },
+                                                { pos: '11', nome: 'Kopsch', pontos: '⏳', pais: '⏳' },
+                                                { pos: '12', nome: 'Luizinho', pontos: '⏳', pais: '⏳' },
+                                                { pos: '13', nome: 'Matheus', pontos: '⏳', pais: '⏳' },
+                                                { pos: '14', nome: 'Tesoro', pontos: '⏳', pais: '⏳' },
+                                            ].map((row, i) => (
+                                                <tr
+                                                    key={i}
+                                                    className={clsx(
+                                                        'group transition-colors',
+                                                        i === 0 && 'bg-amber-500/5',
+                                                        i > 0 && 'hover:bg-stone-800/40'
+                                                    )}
+                                                >
+                                                    <td className="py-3 pr-4 text-stone-500 font-mono font-bold w-8">{row.pos}</td>
+                                                    <td className="py-3 pr-4">
+                                                        <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>
+                                                            {row.nome}
+                                                        </p>
+                                                    </td>
+                                                    <td className="py-3 pr-4 text-right">
+                                                        <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>
+                                                            {row.pontos}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 text-right">
+                                                        <FlagOnly name={row.pais} className="justify-end text-stone-300" />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="border-t-2 border-stone-700">
+                                                <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
+                                                    🏆 Campeão: <span className="text-stone-400 font-normal ml-2">⏳</span>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {tab === 'mundial2029' && (
+                            <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
+                                <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
+                                    Mundial de Clubes 2029
+                                </h2>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="text-xs text-stone-500 uppercase tracking-wider">
+                                                <th className="text-left pb-3 pr-4 font-medium">#</th>
+                                                <th className="text-left pb-3 pr-4 font-medium">Participante</th>
+                                                <th className="text-right pb-3 pr-4 font-medium">Pontos</th>
+                                                <th className="text-right pb-3 font-medium">Time Campeão</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-stone-800/50">
+                                            {[
+                                                { pos: '🥇', nome: 'Alexandre', pontos: '⏳', pais: '⏳' },
+                                                { pos: '🥈', nome: 'Caio', pontos: '⏳', pais: '⏳' },
+                                                { pos: '🥉', nome: 'Carlos', pontos: '⏳', pais: '⏳' },
+                                                { pos: '4', nome: 'Cristian', pontos: '⏳', pais: '⏳' },
+                                                { pos: '5', nome: 'Felipe', pontos: '⏳', pais: '⏳' },
+                                                { pos: '6', nome: 'Geovani', pontos: '⏳', pais: '⏳' },
+                                                { pos: '7', nome: 'Giovanella', pontos: '⏳', pais: '⏳' },
+                                                { pos: '8', nome: 'Groto', pontos: '⏳', pais: '⏳' },
+                                                { pos: '9', nome: 'Tiso', pontos: '⏳', pais: '⏳' },
+                                                { pos: '10', nome: 'Klitzke', pontos: '⏳', pais: '⏳' },
+                                                { pos: '11', nome: 'Kopsch', pontos: '⏳', pais: '⏳' },
+                                                { pos: '12', nome: 'Luizinho', pontos: '⏳', pais: '⏳' },
+                                                { pos: '13', nome: 'Matheus', pontos: '⏳', pais: '⏳' },
+                                                { pos: '14', nome: 'Tesoro', pontos: '⏳', pais: '⏳' },
                                             ].map((row, i) => (
                                                 <tr
                                                     key={i}
