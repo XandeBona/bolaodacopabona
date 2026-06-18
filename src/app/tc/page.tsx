@@ -128,13 +128,11 @@ export default function Home() {
                                         </thead>
                                         <tbody className="divide-y divide-stone-800/50">
                                             {[
-                                                { pos: '🥇', nome: 'Natalia', pontos: 333, pais: 'Brasil' },
-                                                { pos: '🥈', nome: 'Gilmar', pontos: 289, pais: 'França' },
-                                                { pos: '🥉', nome: 'Rafael', pontos: 283, pais: 'Alemanha' },
-                                                { pos: '4', nome: 'Fabiane', pontos: 262, pais: 'Alemanha' },
-                                                { pos: '5', nome: 'Neusa', pontos: 260, pais: 'Brasil' },
-                                                { pos: '6', nome: 'Blandino', pontos: 244, pais: 'Portugal' },
-                                                { pos: '7', nome: 'Alexandre', pontos: 240, pais: 'Brasil' },
+                                                { pos: '🥇', nome: 'Giovanella', pontos: 295, pais: 'Brasil' },
+                                                { pos: '🥈', nome: 'Tesoro', pontos: 248, pais: 'Brasil' },
+                                                { pos: '🥉', nome: 'Xande', pontos: 240, pais: 'Brasil' },
+                                                { pos: '4', nome: 'Caio', pontos: 216, pais: 'Brasil' },
+                                                { pos: '5', nome: 'Matheus', pontos: 184, pais: 'Brasil' },
                                             ].map((row, i) => (
                                                 <tr
                                                     key={i}
@@ -190,13 +188,20 @@ export default function Home() {
                                         </thead>
                                         <tbody className="divide-y divide-stone-800/50">
                                             {[
-                                                { pos: '🥇', nome: 'Natalia', pontos: '⏳', pais: 'Argentina' },
-                                                { pos: '🥈', nome: 'Gilmar', pontos: '⏳', pais: 'Espanha' },
-                                                { pos: '🥉', nome: 'Rafael', pontos: '⏳', pais: 'Portugal' },
-                                                { pos: '4', nome: 'Fabiane', pontos: '⏳', pais: 'Alemanha' },
-                                                { pos: '5', nome: 'Neusa', pontos: '⏳', pais: 'Espanha' },
-                                                { pos: '6', nome: 'Blandino', pontos: '⏳', pais: 'Portugal' },
-                                                { pos: '7', nome: 'Alexandre', pontos: '⏳', pais: 'França' },
+                                                { pos: '🥇', nome: 'Alexandre', pontos: '⏳', pais: 'França' },
+                                                { pos: '🥈', nome: 'Caio', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '🥉', nome: 'Carlos', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '4', nome: 'Cristian', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '5', nome: 'Felipe', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '6', nome: 'Geovani', pontos: '⏳', pais: 'França' },
+                                                { pos: '7', nome: 'Giovanella', pontos: '⏳', pais: 'Espanha' },
+                                                { pos: '8', nome: 'Groto', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '9', nome: 'Tiso', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '10', nome: 'Klitzke', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '11', nome: 'Kopsch', pontos: '⏳', pais: 'França' },
+                                                { pos: '12', nome: 'Luizinho', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '13', nome: 'Matheus', pontos: '⏳', pais: 'Brasil' },
+                                                { pos: '14', nome: 'Tesoro', pontos: '⏳', pais: 'Brasil' },
                                             ].map((row, i) => (
                                                 <tr
                                                     key={i}
