@@ -258,7 +258,9 @@ export function CalendarView({
       const allPast = entry[1].games.every((j) => {
         if (!j.data_hora) return false
         if (isStillLive(j.jogo_numero)) return false
-        return new Date(j.data_hora).getTime() < now.getTime()
+        const passou = new Date(j.data_hora).getTime() < now.getTime()
+        const temResultado = resultadoMap.has(j.jogo_numero)
+        return passou && temResultado
       })
       if (allPast) past.push(entry)
       else future.push(entry)

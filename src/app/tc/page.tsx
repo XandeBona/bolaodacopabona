@@ -63,7 +63,7 @@ export default function Home() {
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
                             <div className="flex items-center gap-3 mb-1">
-                                <span className="text-3xl">🏆</span>
+                                <img src="/thechatubas.png" alt="Troféu" className="w-10 h-10 object-contain" />
                                 <h1 className="text-2xl font-black tracking-tight text-white">
                                     Ranking The Chatubas
                                 </h1>
