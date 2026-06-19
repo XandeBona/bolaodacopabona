@@ -2,11 +2,10 @@
 
 import { TeamWithFlag, FlagOnly } from '@/lib/countryFlags'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { Trophy, Search, ChevronDown } from 'lucide-react'
+import { Trophy } from 'lucide-react'
 import type { Palpite, Resultado, ParticipanteRanking, Jogo } from '@/types'
-import { getFaseLabel, FASES_ORDER } from '@/lib/excel-parser'
+import { FASES_ORDER } from '@/lib/excel-parser'
 import { RankingTable } from '@/components/RankingTable'
-import { MatchCard } from '@/components/MatchCard'
 import { CalendarView } from '@/components/CalendarView'
 import clsx from 'clsx'
 
@@ -20,10 +19,6 @@ export default function Home() {
   const [jogos, setJogos] = useState<Jogo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const [searchParticipante, setSearchParticipante] = useState('')
-  const [faseFiltro, setFaseFiltro] = useState<string>('todas')
-  const [participanteFiltro, setParticipanteFiltro] = useState<string>('todos')
   const [positionChanges, setPositionChanges] = useState<Record<string, number>>({})
   const prevRankingRef = useRef<ParticipanteRanking[]>([])
 
@@ -69,9 +64,7 @@ export default function Home() {
       try {
         const res = await fetch('/api/live')
         const data = await res.json()
-        if (data.em_andamento > 0) {
-          fetchData()
-        }
+        if (data.em_andamento > 0) fetchData()
       } catch { }
     }
     const interval = setInterval(checkLive, 15000)
@@ -87,40 +80,6 @@ export default function Home() {
     () => [...new Set(palpites.map((p) => p.nome_participante))].sort(),
     [palpites]
   )
-
-  const fases = useMemo(
-    () =>
-      [...new Set(palpites.map((p) => p.fase))].sort(
-        (a, b) => (FASES_ORDER[a] ?? 99) - (FASES_ORDER[b] ?? 99)
-      ),
-    [palpites]
-  )
-
-  const palpitesFiltrados = useMemo(() => {
-    return palpites.filter((p) => {
-      if (participanteFiltro !== 'todos' && p.nome_participante !== participanteFiltro) return false
-      if (faseFiltro !== 'todas' && p.fase !== faseFiltro) return false
-      if (searchParticipante) {
-        const q = searchParticipante.toLowerCase()
-        if (
-          !p.nome_participante.toLowerCase().includes(q) &&
-          !p.pais_a.toLowerCase().includes(q) &&
-          !p.pais_b.toLowerCase().includes(q)
-        )
-          return false
-      }
-      return true
-    })
-  }, [palpites, participanteFiltro, faseFiltro, searchParticipante])
-
-  const palpitesByFase = useMemo(() => {
-    const grouped = new Map<string, Palpite[]>()
-    for (const p of palpitesFiltrados) {
-      if (!grouped.has(p.fase)) grouped.set(p.fase, [])
-      grouped.get(p.fase)!.push(p)
-    }
-    return grouped
-  }, [palpitesFiltrados])
 
   const jogosConcluidos = resultados.length
   const totalJogos = palpites.length > 0 ? Math.max(...palpites.map((p) => p.jogo_numero)) : 0
@@ -170,11 +129,12 @@ export default function Home() {
                 tab === t ? 'bg-emerald-600 text-white shadow' : 'text-stone-400 hover:text-white'
               )}
             >
-              {t === 'ranking' ? '🏅 Ranking' : t === 'palpites' ? '📋 Palpites' : t === 'copa2022' ? (
-                <img src="/2022.png" alt="Copa 2022" className="w-10 h-10 rounded object-cover" />
-              ) : (
-                <img src="/2026.png" alt="Copa 2026" className="w-10 h-10 rounded object-cover" />
-              )}</button>
+              {t === 'ranking' ? '🏅 Ranking'
+                : t === 'palpites' ? '📋 Palpites'
+                  : t === 'copa2022' ? <img src="/2022.png" alt="Copa 2022" className="w-10 h-10 rounded object-cover" />
+                    : <img src="/2026.png" alt="Copa 2026" className="w-10 h-10 rounded object-cover" />
+              }
+            </button>
           ))}
         </div>
 
@@ -205,77 +165,11 @@ export default function Home() {
             )}
 
             {tab === 'palpites' && (
-              <div>
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <div className="relative flex-1 min-w-48">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
-                    <input
-                      type="text"
-                      placeholder="Buscar participante ou seleção..."
-                      value={searchParticipante}
-                      onChange={(e) => setSearchParticipante(e.target.value)}
-                      className="w-full bg-stone-900 border border-stone-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
-                  <div className="relative">
-                    <select
-                      value={participanteFiltro}
-                      onChange={(e) => setParticipanteFiltro(e.target.value)}
-                      className="appearance-none bg-stone-900 border border-stone-700 rounded-lg px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:border-emerald-500"
-                    >
-                      <option value="todos">Todos participantes</option>
-                      {participantes.map((p) => (
-                        <option key={p} value={p}>{p}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 pointer-events-none" />
-                  </div>
-                  <div className="relative">
-                    <select
-                      value={faseFiltro}
-                      onChange={(e) => setFaseFiltro(e.target.value)}
-                      className="appearance-none bg-stone-900 border border-stone-700 rounded-lg px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:border-emerald-500"
-                    >
-                      <option value="todas">Todas as fases</option>
-                      {fases.map((f) => (
-                        <option key={f} value={f}>{getFaseLabel(f)}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 pointer-events-none" />
-                  </div>
-                  <span className="self-center text-xs text-stone-500">{palpitesFiltrados.length} palpite(s)</span>
-                </div>
-
-                {palpitesFiltrados.length === 0 ? (
-                  <div className="text-center py-16 text-stone-500">
-                    <p className="text-3xl mb-3">🔍</p>
-                    <p>Nenhum palpite encontrado com os filtros aplicados.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-8">
-                    {Array.from(palpitesByFase.entries()).map(([fase, jogos]) => (
-                      <div key={fase}>
-                        <div className="flex items-center gap-3 mb-4">
-                          <h3 className="text-sm font-bold text-stone-300 uppercase tracking-wider">
-                            {getFaseLabel(fase)}
-                          </h3>
-                          <div className="flex-1 h-px bg-stone-800" />
-                          <span className="text-xs text-stone-600">{jogos.length} jogos</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                          {jogos.map((p) => (
-                            <MatchCard
-                              key={`${p.nome_participante}-${p.jogo_numero}`}
-                              palpite={p}
-                              resultado={resultadoMap.get(p.jogo_numero)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <CalendarView
+                jogos={jogos}
+                resultados={resultados}
+                palpites={palpites}
+              />
             )}
 
             {tab === 'copa2022' && (
@@ -303,24 +197,13 @@ export default function Home() {
                         { pos: '6', nome: 'Blandino', pontos: 244, pais: 'Portugal' },
                         { pos: '7', nome: 'Alexandre', pontos: 240, pais: 'Brasil' },
                       ].map((row, i) => (
-                        <tr
-                          key={i}
-                          className={clsx(
-                            'group transition-colors',
-                            i === 0 && 'bg-amber-500/5',
-                            i > 0 && 'hover:bg-stone-800/40'
-                          )}
-                        >
+                        <tr key={i} className={clsx('group transition-colors', i === 0 && 'bg-amber-500/5', i > 0 && 'hover:bg-stone-800/40')}>
                           <td className="py-3 pr-4 text-stone-500 font-mono font-bold w-8">{row.pos}</td>
                           <td className="py-3 pr-4">
-                            <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>
-                              {row.nome}
-                            </p>
+                            <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>{row.nome}</p>
                           </td>
                           <td className="py-3 pr-4 text-right">
-                            <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>
-                              {row.pontos}
-                            </span>
+                            <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>{row.pontos}</span>
                           </td>
                           <td className="py-3 text-right">
                             <FlagOnly name={row.pais} className="justify-end text-stone-300" />
@@ -365,24 +248,13 @@ export default function Home() {
                         { pos: '6', nome: 'Blandino', pontos: '⏳', pais: 'Portugal' },
                         { pos: '7', nome: 'Alexandre', pontos: '⏳', pais: 'França' },
                       ].map((row, i) => (
-                        <tr
-                          key={i}
-                          className={clsx(
-                            'group transition-colors',
-                            i === 0 && 'bg-amber-500/5',
-                            i > 0 && 'hover:bg-stone-800/40'
-                          )}
-                        >
+                        <tr key={i} className={clsx('group transition-colors', i === 0 && 'bg-amber-500/5', i > 0 && 'hover:bg-stone-800/40')}>
                           <td className="py-3 pr-4 text-stone-500 font-mono font-bold w-8">{row.pos}</td>
                           <td className="py-3 pr-4">
-                            <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>
-                              {row.nome}
-                            </p>
+                            <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>{row.nome}</p>
                           </td>
                           <td className="py-3 pr-4 text-right">
-                            <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>
-                              {row.pontos}
-                            </span>
+                            <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>{row.pontos}</span>
                           </td>
                           <td className="py-3 text-right">
                             <FlagOnly name={row.pais} className="justify-end text-stone-300" />
@@ -404,13 +276,9 @@ export default function Home() {
 
             <footer className="border-t border-stone-800 mt-16 py-6 text-center text-xs text-stone-600">
               <div className="flex items-center justify-center gap-4">
-                <a href="/admin" className="hover:text-stone-400 transition-colors">
-                  Área Admin
-                </a>
+                <a href="/admin" className="hover:text-stone-400 transition-colors">Área Admin</a>
                 <span className="text-stone-700">|</span>
-                <a href="/tc" className="hover:text-stone-400 transition-colors">
-                  TC
-                </a>
+                <a href="/tc" className="hover:text-stone-400 transition-colors">TC</a>
               </div>
             </footer>
           </>
