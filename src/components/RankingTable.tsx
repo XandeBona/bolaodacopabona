@@ -71,7 +71,7 @@ export function RankingTable({ ranking, positionChanges }: RankingTableProps) {
                       <div
                         className={clsx(
                           'h-full rounded-full transition-all',
-                          i === 0 ? 'bg-amber-400' : 'bg-emerald-500'
+                          i === 0 ? 'bg-amber-400' : 'bg-blue-500'
                         )}
                         style={{ width: `${pct}%` }}
                       />

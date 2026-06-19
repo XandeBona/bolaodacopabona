@@ -58,7 +58,7 @@ export default function Home() {
 
     return (
         <div className="min-h-screen">
-            <header className="green-header border-b border-stone-800/50">
+            <header className="grass-header border-b border-stone-800/50">
                 <div className="max-w-6xl mx-auto px-4 py-8">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
@@ -92,9 +92,9 @@ export default function Home() {
                             ) : t === 'copa2026' ? (
                                 <img src="/2026.png" alt="Copa 2026" className="w-10 h-10 rounded object-cover" />
                             ) : t === 'champions2627' ? (
-                                <img src="/champions.png" alt="Champions League 26/27" className="w-10 h-10 rounded object-cover" />
+                                <img src="/loading.png" alt="Champions League 26/27" className="w-10 h-10 rounded object-cover" />
                             ) : (
-                                <img src="/mundial2029.png" alt="Mundial 2029" className="w-10 h-10 rounded object-cover" />
+                                <img src="/loading.png" alt="Mundial 2029" className="w-10 h-10 rounded object-cover" />
                             )}
                         </button>
                     ))}

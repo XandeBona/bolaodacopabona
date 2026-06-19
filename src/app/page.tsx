@@ -102,7 +102,7 @@ export default function Home() {
             </div>
             <div className="flex gap-3 text-center">
               <div className="bg-stone-900/60 border border-stone-800 rounded-xl px-4 py-2">
-                <p className="text-2xl font-black text-emerald-400 font-mono">{jogosConcluidos}</p>
+                <p className="text-2xl font-black text-blue-400 font-mono">{jogosConcluidos}</p>
                 <p className="text-xs text-stone-500">com resultado</p>
               </div>
               <div className="bg-stone-900/60 border border-stone-800 rounded-xl px-4 py-2">
