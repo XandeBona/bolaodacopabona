@@ -58,7 +58,7 @@ export default function Home() {
 
     return (
         <div className="min-h-screen">
-            <header className="ocean-header border-b border-stone-800/50">
+            <header className="green-header border-b border-stone-800/50">
                 <div className="max-w-6xl mx-auto px-4 py-8">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
@@ -84,7 +84,7 @@ export default function Home() {
                             onClick={() => setTab(t)}
                             className={clsx(
                                 'px-5 py-2 rounded-lg text-sm font-semibold transition-all',
-                                tab === t ? 'bg-blue-600 text-white shadow' : 'text-stone-400 hover:text-white'
+                                tab === t ? 'bg-emerald-600 text-white shadow' : 'text-stone-400 hover:text-white'
                             )}
                         >
                             {t === 'copa2022' ? (

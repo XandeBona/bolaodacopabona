@@ -1,11 +1,10 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import { Calendar, Clock, MapPin, Radio, Eye, X, ChevronDown } from 'lucide-react'
 import type { Jogo, Resultado, Palpite } from '@/types'
 import { getFaseLabel, FASES_ORDER } from '@/lib/excel-parser'
 import { calcularPontos } from '@/types'
-import { GRUPOS } from '@/lib/grupos'
 import { TeamWithFlag } from '@/lib/countryFlags'
 import { ScoreBadge } from '@/components/ScoreBadge'
 import clsx from 'clsx'
@@ -69,12 +68,6 @@ function PalpitesModal({
                 <TeamWithFlag name={pais_b} />
               </div>
             )}
-            {isLive && (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-950/60 border border-red-800/50 px-1.5 py-0.5 rounded animate-pulse">
-                <Radio size={8} />
-                AO VIVO
-              </span>
-            )}
           </div>
           <button
             onClick={onClose}
@@ -83,25 +76,6 @@ function PalpitesModal({
             <X size={16} />
           </button>
         </div>
-
-        {(isLive || resultado) && (
-          <div className={clsx('text-center py-3 border-b border-stone-800', isLive ? 'bg-red-950/20' : 'bg-emerald-950/10')}>
-            {isLive && liveScore ? (
-              <span className="text-red-400 font-mono font-black text-2xl animate-pulse">
-                {liveScore.gol_a} × {liveScore.gol_b}
-              </span>
-            ) : resultado ? (
-              <span className="text-emerald-400 font-mono font-bold text-xl">
-                {resultado.gol_a} × {resultado.gol_b}
-                {resultado.penalti_a != null && (
-                  <span className="text-stone-500 text-sm font-normal ml-2">
-                    (pên: {resultado.penalti_a} × {resultado.penalti_b})
-                  </span>
-                )}
-              </span>
-            ) : null}
-          </div>
-        )}
 
         <div className="p-5">
           {palpitesDoJogo.length === 0 ? (
@@ -134,7 +108,7 @@ function PalpitesModal({
                         {p.penalti_a != null && (
                           <span className="text-stone-500 text-xs">(pên: {p.penalti_a}×{p.penalti_b})</span>
                         )}
-                        <ScoreBadge pontos={pontos} size="sm" />
+                        {pontos !== null && <ScoreBadge pontos={pontos} size="sm" />}
                       </div>
                     </div>
                   )
@@ -158,6 +132,7 @@ export function CalendarView({
 }) {
   const [liveScores, setLiveScores] = useState<Map<number, { gol_a: number; gol_b: number; minuto: number }>>(new Map())
   const [liveGameNumeros, setLiveGameNumeros] = useState<Set<number>>(new Set())
+  const [liveEndTimes, setLiveEndTimes] = useState<Map<number, number>>(new Map())
   const [modalJogo, setModalJogo] = useState<number | null>(null)
   const [mostrarTodos, setMostrarTodos] = useState(false)
 
@@ -173,6 +148,21 @@ export function CalendarView({
             set.add(g.jogo_numero)
             map.set(g.jogo_numero, { gol_a: g.gol_a, gol_b: g.gol_b, minuto: g.minuto })
           }
+
+          setLiveEndTimes((prev) => {
+            const next = new Map(prev)
+            for (const [num] of liveScores) {
+              if (!set.has(num) && !next.has(num)) {
+                next.set(num, Date.now() + 30 * 60 * 1000)
+              }
+            }
+            // Limpa entradas expiradas
+            for (const [num, endTime] of next) {
+              if (Date.now() > endTime) next.delete(num)
+            }
+            return next
+          })
+
           setLiveScores(map)
           setLiveGameNumeros(set)
         }
@@ -181,7 +171,14 @@ export function CalendarView({
     poll()
     const interval = setInterval(poll, 10000)
     return () => clearInterval(interval)
-  }, [])
+  }, [liveScores])
+
+  function isStillLive(jogoNumero: number): boolean {
+    if (liveGameNumeros.has(jogoNumero)) return true
+    const endTime = liveEndTimes.get(jogoNumero)
+    if (endTime && Date.now() < endTime) return true
+    return false
+  }
 
   const resultadoMap = useMemo(
     () => new Map(resultados.map((r) => [r.jogo_numero, r])),
@@ -252,26 +249,22 @@ export function CalendarView({
       .concat(Array.from(map.entries()).filter(([k]) => k === 'sem-data'))
   }, [groupGamesSorted])
 
-  // Separa dias passados dos futuros
   const { pastDates, futureDates } = useMemo(() => {
     const past: typeof gamesByDate = []
     const future: typeof gamesByDate = []
     for (const entry of gamesByDate) {
       const [key] = entry
-      if (key === 'sem-data') {
-        future.push(entry)
-        continue
-      }
-      // Considera passado se todos os jogos do dia já têm data no passado
+      if (key === 'sem-data') { future.push(entry); continue }
       const allPast = entry[1].games.every((j) => {
         if (!j.data_hora) return false
+        if (isStillLive(j.jogo_numero)) return false
         return new Date(j.data_hora).getTime() < now.getTime()
       })
       if (allPast) past.push(entry)
       else future.push(entry)
     }
     return { pastDates: past, futureDates: future }
-  }, [gamesByDate, now])
+  }, [gamesByDate, liveGameNumeros, liveEndTimes])
 
   const nextGameNum = useMemo(() => {
     for (const j of groupGamesSorted) {
@@ -283,6 +276,7 @@ export function CalendarView({
 
   const modalJogoData = modalJogo !== null ? dbJogoMap.get(modalJogo) : null
   const modalResultado = modalJogo !== null ? resultadoMap.get(modalJogo) : undefined
+  const modalIsLive = modalJogo !== null ? isStillLive(modalJogo) : false
   const modalLive = modalJogo !== null ? liveScores.get(modalJogo) : undefined
 
   function renderDayGroup(entry: (typeof gamesByDate)[0]) {
@@ -297,7 +291,8 @@ export function CalendarView({
           {dayGames.map((jogo) => {
             const dt = formatDateTime(jogo.data_hora)
             const resultado = resultadoMap.get(jogo.jogo_numero)
-            const live = liveScores.get(jogo.jogo_numero)
+            const stillLive = isStillLive(jogo.jogo_numero)
+            const live = stillLive ? (liveScores.get(jogo.jogo_numero) ?? { gol_a: 0, gol_b: 0, minuto: 0 }) : undefined
             return (
               <GameCard
                 key={jogo.jogo_numero}
@@ -308,7 +303,7 @@ export function CalendarView({
                 pais_b={jogo.pais_b}
                 dt={dt}
                 estadio={jogo.estadio}
-                resultado={live ? undefined : resultado}
+                resultado={stillLive ? undefined : resultado}
                 isNext={jogo.jogo_numero === nextGameNum}
                 liveScore={live ?? null}
                 onVerPalpites={() => setModalJogo(jogo.jogo_numero)}
@@ -329,7 +324,7 @@ export function CalendarView({
           pais_b={modalJogoData?.pais_b ?? null}
           palpites={palpites}
           resultado={modalResultado}
-          isLive={liveGameNumeros.has(modalJogo)}
+          isLive={modalIsLive}
           liveScore={modalLive ?? null}
           onClose={() => setModalJogo(null)}
         />
@@ -352,7 +347,6 @@ export function CalendarView({
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {/* Jogos passados */}
                   {pastDates.length > 0 && (
                     <div>
                       <button
@@ -374,8 +368,6 @@ export function CalendarView({
                       )}
                     </div>
                   )}
-
-                  {/* Jogos futuros e de hoje */}
                   <div className="space-y-6">
                     {futureDates.map((entry) => renderDayGroup(entry))}
                   </div>
@@ -398,7 +390,8 @@ export function CalendarView({
               {resolvedGames.map((g) => {
                 const resultado = resultadoMap.get(g.jogo_numero)
                 const dt = g.db ? formatDateTime(g.db.data_hora) : null
-                const live = liveScores.get(g.jogo_numero)
+                const stillLive = isStillLive(g.jogo_numero)
+                const live = stillLive ? (liveScores.get(g.jogo_numero) ?? { gol_a: 0, gol_b: 0, minuto: 0 }) : undefined
                 return (
                   <GameCard
                     key={g.jogo_numero}
@@ -408,7 +401,7 @@ export function CalendarView({
                     pais_b={g.db?.pais_b ?? null}
                     dt={dt}
                     estadio={g.db?.estadio ?? null}
-                    resultado={live ? undefined : resultado}
+                    resultado={stillLive ? undefined : resultado}
                     placeholder={!g.db}
                     liveScore={live ?? null}
                     onVerPalpites={() => setModalJogo(g.jogo_numero)}
@@ -466,12 +459,6 @@ function GameCard({
           #{jogo_numero}
         </span>
         {grupo && <span className="text-xs text-stone-600">Grupo {grupo}</span>}
-        {isLive && (
-          <span className="flex items-center gap-1 text-[10px] font-bold text-red-400 bg-red-950/60 border border-red-800/50 px-1.5 py-0.5 rounded animate-pulse">
-            <Radio size={8} className="animate-ping" />
-            AO VIVO
-          </span>
-        )}
         {isNext && !resultado && !isLive && (
           <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-800/50 px-1.5 py-0.5 rounded">
             PRÓXIMO
@@ -510,12 +497,6 @@ function GameCard({
                 <span className="truncate">{estadio}</span>
               </div>
             )}
-            {isLive && (
-              <div className="flex items-center gap-1.5 text-red-400">
-                <Radio size={10} />
-                <span>{liveScore!.minuto}&apos;</span>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -530,14 +511,6 @@ function GameCard({
               (pên: {resultado.penalti_a} × {resultado.penalti_b})
             </span>
           )}
-        </div>
-      )}
-
-      {isLive && (
-        <div className="mt-3 pt-3 border-t border-red-800 text-center">
-          <span className="text-red-400 font-mono font-bold text-2xl animate-pulse">
-            {liveScore!.gol_a} × {liveScore!.gol_b}
-          </span>
         </div>
       )}
 
