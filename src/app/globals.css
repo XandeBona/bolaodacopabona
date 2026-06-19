@@ -27,3 +27,11 @@ body {
     radial-gradient(ellipse at 50% 0%, rgba(30, 64, 175, 0.3) 0%, transparent 70%),
     linear-gradient(180deg, #0c1530 0%, #0c0c0e 100%);
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

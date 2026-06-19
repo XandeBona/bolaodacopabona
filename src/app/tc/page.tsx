@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react'
 import type { Palpite, Resultado, ParticipanteRanking, Jogo } from '@/types'
 import clsx from 'clsx'
 
-type Tab = 'copa2022' | 'copa2026' | 'champions2627' | 'mundial2029'
+type Tab = 'copa2022' | 'copa2026' | 'champions2627' | 'champions2728' | 'champions2829' | 'mundial2029'
 
 export default function Home() {
     const [tab, setTab] = useState<Tab>('copa2022')
@@ -77,13 +77,13 @@ export default function Home() {
             </header>
 
             <div className="max-w-6xl mx-auto px-4 py-6">
-                <div className="flex gap-1 bg-stone-900 border border-stone-800 rounded-xl p-1 mb-6 w-fit">
-                    {(['copa2022', 'copa2026', 'champions2627', 'mundial2029'] as Tab[]).map((t) => (
+                <div className="flex gap-1 bg-stone-900 border border-stone-800 rounded-xl p-1 mb-6 overflow-x-auto w-full scrollbar-hide">
+                    {(['copa2022', 'copa2026', 'champions2627', 'champions2728', 'champions2829', 'mundial2029'] as Tab[]).map((t) => (
                         <button
                             key={t}
                             onClick={() => setTab(t)}
                             className={clsx(
-                                'px-5 py-2 rounded-lg text-sm font-semibold transition-all',
+                                'px-5 py-2 rounded-lg text-sm font-semibold transition-all shrink-0',
                                 tab === t ? 'bg-emerald-600 text-white shadow' : 'text-stone-400 hover:text-white'
                             )}
                         >
@@ -92,7 +92,11 @@ export default function Home() {
                             ) : t === 'copa2026' ? (
                                 <img src="/2026.png" alt="Copa 2026" className="w-10 h-10 rounded object-cover" />
                             ) : t === 'champions2627' ? (
-                                <img src="/loading.png" alt="Champions League 26/27" className="w-10 h-10 rounded object-cover" />
+                                <img src="/loading.png" alt="Champions 26/27" className="w-10 h-10 rounded object-cover" />
+                            ) : t === 'champions2728' ? (
+                                <img src="/loading.png" alt="Champions 27/28" className="w-10 h-10 rounded object-cover" />
+                            ) : t === 'champions2829' ? (
+                                <img src="/loading.png" alt="Champions 28/29" className="w-10 h-10 rounded object-cover" />
                             ) : (
                                 <img src="/loading.png" alt="Mundial 2029" className="w-10 h-10 rounded object-cover" />
                             )}
@@ -298,6 +302,122 @@ export default function Home() {
                                                     </td>
                                                     <td className="py-3 text-right">
                                                         <FlagOnly name={row.pais} className="justify-end text-stone-300" />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="border-t-2 border-stone-700">
+                                                <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
+                                                    🏆 Campeão: <span className="text-stone-400 font-normal ml-2">⏳</span>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {tab === 'champions2728' && (
+                            <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
+                                <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
+                                    Champions League 2027/2028
+                                </h2>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="text-xs text-stone-500 uppercase tracking-wider">
+                                                <th className="text-left pb-3 pr-4 font-medium">#</th>
+                                                <th className="text-left pb-3 pr-4 font-medium">Participante</th>
+                                                <th className="text-right pb-3 pr-4 font-medium">Pontos</th>
+                                                <th className="text-right pb-3 font-medium">Time Campeão</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-stone-800/50">
+                                            {[
+                                                { pos: '🥇', nome: 'Alexandre', pontos: '⏳' },
+                                                { pos: '🥈', nome: 'Caio', pontos: '⏳' },
+                                                { pos: '🥉', nome: 'Carlos', pontos: '⏳' },
+                                                { pos: '4', nome: 'Cristian', pontos: '⏳' },
+                                                { pos: '5', nome: 'Felipe', pontos: '⏳' },
+                                                { pos: '6', nome: 'Geovani', pontos: '⏳' },
+                                                { pos: '7', nome: 'Giovanella', pontos: '⏳' },
+                                                { pos: '8', nome: 'Groto', pontos: '⏳' },
+                                                { pos: '9', nome: 'Tiso', pontos: '⏳' },
+                                                { pos: '10', nome: 'Klitzke', pontos: '⏳' },
+                                                { pos: '11', nome: 'Kopsch', pontos: '⏳' },
+                                                { pos: '12', nome: 'Luizinho', pontos: '⏳' },
+                                                { pos: '13', nome: 'Matheus', pontos: '⏳' },
+                                                { pos: '14', nome: 'Tesoro', pontos: '⏳' },
+                                            ].map((row, i) => (
+                                                <tr key={i} className={clsx('group transition-colors', i === 0 && 'bg-amber-500/5', i > 0 && 'hover:bg-stone-800/40')}>
+                                                    <td className="py-3 pr-4 text-stone-500 font-mono font-bold w-8">{row.pos}</td>
+                                                    <td className="py-3 pr-4">
+                                                        <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>{row.nome}</p>
+                                                    </td>
+                                                    <td className="py-3 pr-4 text-right">
+                                                        <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>{row.pontos}</span>
+                                                    </td>
+                                                    <td className="py-3 text-right">
+                                                        <span className="text-stone-500">⏳</span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="border-t-2 border-stone-700">
+                                                <td colSpan={4} className="py-4 text-center font-bold text-white text-base">
+                                                    🏆 Campeão: <span className="text-stone-400 font-normal ml-2">⏳</span>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {tab === 'champions2829' && (
+                            <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6">
+                                <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
+                                    Champions League 2028/2029
+                                </h2>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="text-xs text-stone-500 uppercase tracking-wider">
+                                                <th className="text-left pb-3 pr-4 font-medium">#</th>
+                                                <th className="text-left pb-3 pr-4 font-medium">Participante</th>
+                                                <th className="text-right pb-3 pr-4 font-medium">Pontos</th>
+                                                <th className="text-right pb-3 font-medium">Time Campeão</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-stone-800/50">
+                                            {[
+                                                { pos: '🥇', nome: 'Alexandre', pontos: '⏳' },
+                                                { pos: '🥈', nome: 'Caio', pontos: '⏳' },
+                                                { pos: '🥉', nome: 'Carlos', pontos: '⏳' },
+                                                { pos: '4', nome: 'Cristian', pontos: '⏳' },
+                                                { pos: '5', nome: 'Felipe', pontos: '⏳' },
+                                                { pos: '6', nome: 'Geovani', pontos: '⏳' },
+                                                { pos: '7', nome: 'Giovanella', pontos: '⏳' },
+                                                { pos: '8', nome: 'Groto', pontos: '⏳' },
+                                                { pos: '9', nome: 'Tiso', pontos: '⏳' },
+                                                { pos: '10', nome: 'Klitzke', pontos: '⏳' },
+                                                { pos: '11', nome: 'Kopsch', pontos: '⏳' },
+                                                { pos: '12', nome: 'Luizinho', pontos: '⏳' },
+                                                { pos: '13', nome: 'Matheus', pontos: '⏳' },
+                                                { pos: '14', nome: 'Tesoro', pontos: '⏳' },
+                                            ].map((row, i) => (
+                                                <tr key={i} className={clsx('group transition-colors', i === 0 && 'bg-amber-500/5', i > 0 && 'hover:bg-stone-800/40')}>
+                                                    <td className="py-3 pr-4 text-stone-500 font-mono font-bold w-8">{row.pos}</td>
+                                                    <td className="py-3 pr-4">
+                                                        <p className={clsx('font-semibold', i === 0 ? 'text-amber-300' : 'text-white')}>{row.nome}</p>
+                                                    </td>
+                                                    <td className="py-3 pr-4 text-right">
+                                                        <span className={clsx('font-mono font-black text-lg', i === 0 ? 'text-amber-300' : 'text-white')}>{row.pontos}</span>
+                                                    </td>
+                                                    <td className="py-3 text-right">
+                                                        <span className="text-stone-500">⏳</span>
                                                     </td>
                                                 </tr>
                                             ))}
