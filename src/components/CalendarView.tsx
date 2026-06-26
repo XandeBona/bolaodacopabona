@@ -98,11 +98,18 @@ function PalpitesModal({
                         pontos === 10
                           ? 'bg-amber-950/20 border-amber-500/30'
                           : pontos !== null && pontos >= 5
-                          ? 'bg-emerald-950/10 border-emerald-500/20'
-                          : 'bg-stone-800/50 border-stone-700/50'
+                            ? 'bg-emerald-950/10 border-emerald-500/20'
+                            : 'bg-stone-800/50 border-stone-700/50'
                       )}
                     >
-                      <span className="text-sm font-semibold text-white truncate">{p.nome_participante}</span>
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <span className="text-sm font-semibold text-white truncate">{p.nome_participante}</span>
+                        <div className="flex items-center gap-1.5 text-xs text-stone-500">
+                          <TeamWithFlag name={p.pais_a} />
+                          <span>vs</span>
+                          <TeamWithFlag name={p.pais_b} />
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="font-mono font-black text-white text-sm">
                           {p.gol_a} × {p.gol_b}
@@ -165,7 +172,7 @@ export function CalendarView({
           setLiveScores(map)
           setLiveGameNumeros(set)
         }
-      } catch {}
+      } catch { }
     }
     poll()
     const interval = setInterval(poll, 10000)
