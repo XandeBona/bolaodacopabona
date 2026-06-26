@@ -21,6 +21,17 @@ function formatDataHora(iso: string | null): string {
     ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
+function getDescricaoJogo(jogoNumero: number): string {
+  if (jogoNumero >= 73 && jogoNumero <= 88) return `${jogoNumero - 72}º Confronto — Rodada de 32`
+  if (jogoNumero >= 89 && jogoNumero <= 96) return `${jogoNumero - 88}º Confronto — Oitavas de Final`
+  if (jogoNumero >= 97 && jogoNumero <= 100) return `${jogoNumero - 96}º Confronto — Quartas de Final`
+  if (jogoNumero === 101) return '1º Confronto — Semifinal'
+  if (jogoNumero === 102) return '2º Confronto — Semifinal'
+  if (jogoNumero === 103) return 'Disputa de 3º e 4º Lugar'
+  if (jogoNumero === 104) return 'Final'
+  return ''
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
@@ -34,7 +45,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState<number | null>(null)
   const [fixingGrupos, setFixingGrupos] = useState(false)
   const [editGameNum, setEditGameNum] = useState<number | null>(null)
-  const [editForm, setEditForm] = useState({ grupo: '', data_hora: '', estadio: '' })
+  const [editForm, setEditForm] = useState({ grupo: '', data_hora: '', estadio: '', pais_a: '', pais_b: '' })
   const [savingGame, setSavingGame] = useState(false)
 
   const [participantes, setParticipantes] = useState<string[]>([])
@@ -343,6 +354,7 @@ export default function AdminPage() {
                   const edit = edits[jogo.jogo_numero] ?? { gol_a: '', gol_b: '', penalti_a: '', penalti_b: '' }
                   const temResultado = !!jogo.resultado
                   const isSaving = saving === jogo.jogo_numero
+                  const descricao = getDescricaoJogo(jogo.jogo_numero)
                   return (
                     <div
                       key={jogo.jogo_numero}
@@ -351,17 +363,32 @@ export default function AdminPage() {
                         temResultado ? 'border-emerald-500/20' : 'border-stone-800'
                       )}
                     >
-                      {/* Linha 1: número + times */}
+                      {/* Linha 1: número + descrição + times */}
                       <div className="flex items-center gap-2 mb-3">
                         <span className="text-xs font-mono text-stone-500 bg-stone-800 px-2 py-0.5 rounded shrink-0">#{jogo.jogo_numero}</span>
                         {jogo.grupo && (
                           <span className="text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded shrink-0">G{jogo.grupo}</span>
                         )}
-                        <FlagOnly name={jogo.pais_a} />
-                        <span className="font-semibold text-white text-sm truncate">{jogo.pais_a}</span>
+                        {descricao && (
+                          <span className="text-xs text-stone-500 italic shrink-0 hidden sm:inline">{descricao}</span>
+                        )}
+                        {jogo.pais_a ? (
+                          <>
+                            <FlagOnly name={jogo.pais_a} />
+                            <span className="font-semibold text-white text-sm truncate">{jogo.pais_a}</span>
+                          </>
+                        ) : (
+                          <span className="text-stone-600 text-sm">A definir</span>
+                        )}
                         <span className="text-stone-600 text-xs shrink-0">vs</span>
-                        <FlagOnly name={jogo.pais_b} />
-                        <span className="font-semibold text-white text-sm truncate">{jogo.pais_b}</span>
+                        {jogo.pais_b ? (
+                          <>
+                            <FlagOnly name={jogo.pais_b} />
+                            <span className="font-semibold text-white text-sm truncate">{jogo.pais_b}</span>
+                          </>
+                        ) : (
+                          <span className="text-stone-600 text-sm">A definir</span>
+                        )}
                         {(jogo.data_hora || jogo.estadio) && (
                           <div className="hidden md:flex flex-col text-right ml-auto shrink-0">
                             {jogo.data_hora && <span className="text-xs text-stone-400 font-mono">{formatDataHora(jogo.data_hora)}</span>}
@@ -403,7 +430,13 @@ export default function AdminPage() {
                         <button
                           onClick={() => {
                             const dt = jogo.data_hora ? new Date(jogo.data_hora) : null
-                            setEditForm({ grupo: jogo.grupo ?? '', data_hora: dt ? dt.toISOString().slice(0, 16) : '', estadio: jogo.estadio ?? '' })
+                            setEditForm({
+                              grupo: jogo.grupo ?? '',
+                              data_hora: dt ? dt.toISOString().slice(0, 16) : '',
+                              estadio: jogo.estadio ?? '',
+                              pais_a: jogo.pais_a ?? '',
+                              pais_b: jogo.pais_b ?? '',
+                            })
                             setEditGameNum(jogo.jogo_numero)
                           }}
                           className="p-1.5 rounded-lg text-stone-600 hover:text-emerald-400 hover:bg-emerald-950/30 transition-colors ml-auto"
@@ -424,7 +457,12 @@ export default function AdminPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
             <div className="bg-stone-900 border border-stone-700 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-bold text-white">Editar Jogo #{editGameNum}</h3>
+                <div>
+                  <h3 className="font-bold text-white">Editar Jogo #{editGameNum}</h3>
+                  {getDescricaoJogo(editGameNum) && (
+                    <p className="text-xs text-stone-500 mt-0.5">{getDescricaoJogo(editGameNum)}</p>
+                  )}
+                </div>
                 <button onClick={() => setEditGameNum(null)} className="p-1 rounded-lg text-stone-500 hover:text-white hover:bg-stone-800 transition-colors"><X size={16} /></button>
               </div>
               <div className="space-y-4">
@@ -443,6 +481,26 @@ export default function AdminPage() {
                   <label className="block text-xs text-stone-400 mb-1.5">Estádio</label>
                   <input type="text" value={editForm.estadio} onChange={(e) => setEditForm((f) => ({ ...f, estadio: e.target.value }))} placeholder="Ex: Estádio Nacional" className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-emerald-500" />
                 </div>
+                <div>
+                  <label className="block text-xs text-stone-400 mb-1.5">Time A</label>
+                  <input
+                    type="text"
+                    value={editForm.pais_a}
+                    onChange={(e) => setEditForm((f) => ({ ...f, pais_a: e.target.value }))}
+                    placeholder="Ex: Brasil"
+                    className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-stone-400 mb-1.5">Time B</label>
+                  <input
+                    type="text"
+                    value={editForm.pais_b}
+                    onChange={(e) => setEditForm((f) => ({ ...f, pais_b: e.target.value }))}
+                    placeholder="Ex: Argentina"
+                    className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
               </div>
               <div className="flex gap-2 mt-6">
                 <button onClick={() => setEditGameNum(null)} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold bg-stone-800 text-stone-400 hover:text-white transition-colors">Cancelar</button>
@@ -454,7 +512,14 @@ export default function AdminPage() {
                       const res = await fetch('/api/jogos', {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-                        body: JSON.stringify({ jogo_numero: editGameNum, grupo: editForm.grupo || null, data_hora: dataHoraISO, estadio: editForm.estadio || null }),
+                        body: JSON.stringify({
+                          jogo_numero: editGameNum,
+                          grupo: editForm.grupo || null,
+                          data_hora: dataHoraISO,
+                          estadio: editForm.estadio || null,
+                          pais_a: editForm.pais_a || null,
+                          pais_b: editForm.pais_b || null,
+                        }),
                       })
                       const data = await res.json()
                       showToast(data.error ?? 'Jogo atualizado!', res.ok)

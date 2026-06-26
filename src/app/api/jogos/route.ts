@@ -19,7 +19,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { jogo_numero, grupo, data_hora, estadio } = body
+  const { jogo_numero, grupo, data_hora, estadio, pais_a, pais_b } = body
 
   if (!jogo_numero) {
     return NextResponse.json({ error: 'jogo_numero é obrigatório' }, { status: 400 })
@@ -29,6 +29,8 @@ export async function PATCH(request: NextRequest) {
   if (grupo !== undefined) updates.grupo = grupo || null
   if (data_hora !== undefined) updates.data_hora = data_hora || null
   if (estadio !== undefined) updates.estadio = estadio || null
+  if (pais_a !== undefined) updates.pais_a = pais_a || null
+  if (pais_b !== undefined) updates.pais_b = pais_b || null
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'Nenhum campo para atualizar' }, { status: 400 })
