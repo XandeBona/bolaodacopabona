@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState, useEffect, useCallback } from 'react'
-import { Calendar, Clock, MapPin, Radio, Eye, X, ChevronDown } from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { Calendar, Clock, MapPin, Eye, X, ChevronDown } from 'lucide-react'
 import type { Jogo, Resultado, Palpite } from '@/types'
 import { getFaseLabel, FASES_ORDER } from '@/lib/excel-parser'
 import { calcularPontos } from '@/types'
@@ -95,9 +95,11 @@ function PalpitesModal({
                       key={p.nome_participante}
                       className={clsx(
                         'flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all',
-                        pontos === 10 ? 'bg-amber-950/20 border-amber-500/30' :
-                          pontos !== null && pontos >= 5 ? 'bg-emerald-950/10 border-emerald-500/20' :
-                            'bg-stone-800/50 border-stone-700/50'
+                        pontos === 10
+                          ? 'bg-amber-950/20 border-amber-500/30'
+                          : pontos !== null && pontos >= 5
+                          ? 'bg-emerald-950/10 border-emerald-500/20'
+                          : 'bg-stone-800/50 border-stone-700/50'
                       )}
                     >
                       <span className="text-sm font-semibold text-white truncate">{p.nome_participante}</span>
@@ -148,7 +150,6 @@ export function CalendarView({
             set.add(g.jogo_numero)
             map.set(g.jogo_numero, { gol_a: g.gol_a, gol_b: g.gol_b, minuto: g.minuto })
           }
-
           setLiveEndTimes((prev) => {
             const next = new Map(prev)
             for (const [num] of liveScores) {
@@ -156,17 +157,15 @@ export function CalendarView({
                 next.set(num, Date.now() + 30 * 60 * 1000)
               }
             }
-            // Limpa entradas expiradas
             for (const [num, endTime] of next) {
               if (Date.now() > endTime) next.delete(num)
             }
             return next
           })
-
           setLiveScores(map)
           setLiveGameNumeros(set)
         }
-      } catch { }
+      } catch {}
     }
     poll()
     const interval = setInterval(poll, 10000)
@@ -294,7 +293,9 @@ export function CalendarView({
             const dt = formatDateTime(jogo.data_hora)
             const resultado = resultadoMap.get(jogo.jogo_numero)
             const stillLive = isStillLive(jogo.jogo_numero)
-            const live = stillLive ? (liveScores.get(jogo.jogo_numero) ?? { gol_a: 0, gol_b: 0, minuto: 0 }) : undefined
+            const live = stillLive
+              ? (liveScores.get(jogo.jogo_numero) ?? { gol_a: 0, gol_b: 0, minuto: 0 })
+              : undefined
             return (
               <GameCard
                 key={jogo.jogo_numero}
@@ -388,29 +389,91 @@ export function CalendarView({
               <div className="flex-1 h-px bg-stone-800" />
               <span className="text-xs text-stone-500">{games.length} jogos</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {resolvedGames.map((g) => {
-                const resultado = resultadoMap.get(g.jogo_numero)
-                const dt = g.db ? formatDateTime(g.db.data_hora) : null
-                const stillLive = isStillLive(g.jogo_numero)
-                const live = stillLive ? (liveScores.get(g.jogo_numero) ?? { gol_a: 0, gol_b: 0, minuto: 0 }) : undefined
-                return (
-                  <GameCard
-                    key={g.jogo_numero}
-                    jogo_numero={g.jogo_numero}
-                    fase={g.fase}
-                    pais_a={g.db?.pais_a ?? null}
-                    pais_b={g.db?.pais_b ?? null}
-                    dt={dt}
-                    estadio={g.db?.estadio ?? null}
-                    resultado={stillLive ? undefined : resultado}
-                    placeholder={!g.db}
-                    liveScore={live ?? null}
-                    onVerPalpites={() => setModalJogo(g.jogo_numero)}
-                  />
-                )
-              })}
-            </div>
+
+            {(() => {
+              const byDate = new Map<string, { label: string; games: typeof resolvedGames }>()
+              const noDate: typeof resolvedGames = []
+
+              for (const g of resolvedGames) {
+                const iso = g.db?.data_hora
+                if (!iso) { noDate.push(g); continue }
+                const d = new Date(iso)
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                if (!byDate.has(key)) {
+                  byDate.set(key, {
+                    label: d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }),
+                    games: [],
+                  })
+                }
+                byDate.get(key)!.games.push(g)
+              }
+
+              const groups = Array.from(byDate.entries()).sort(([a], [b]) => a.localeCompare(b))
+
+              return (
+                <div className="space-y-6">
+                  {groups.map(([key, { label, games: dayGames }]) => (
+                    <div key={key}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-sm font-bold text-stone-300 uppercase tracking-wider">{label}</span>
+                        <div className="flex-1 h-px bg-stone-800" />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {dayGames.map((g) => {
+                          const resultado = resultadoMap.get(g.jogo_numero)
+                          const dt = g.db ? formatDateTime(g.db.data_hora) : null
+                          const stillLive = isStillLive(g.jogo_numero)
+                          const live = stillLive
+                            ? (liveScores.get(g.jogo_numero) ?? { gol_a: 0, gol_b: 0, minuto: 0 })
+                            : undefined
+                          return (
+                            <GameCard
+                              key={g.jogo_numero}
+                              jogo_numero={g.jogo_numero}
+                              fase={g.fase}
+                              pais_a={g.db?.pais_a ?? null}
+                              pais_b={g.db?.pais_b ?? null}
+                              dt={dt}
+                              estadio={null}
+                              resultado={stillLive ? undefined : resultado}
+                              placeholder={!g.db}
+                              liveScore={live ?? null}
+                              onVerPalpites={() => setModalJogo(g.jogo_numero)}
+                            />
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+
+                  {noDate.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-sm font-bold text-stone-300 uppercase tracking-wider">A definir</span>
+                        <div className="flex-1 h-px bg-stone-800" />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {noDate.map((g) => (
+                          <GameCard
+                            key={g.jogo_numero}
+                            jogo_numero={g.jogo_numero}
+                            fase={g.fase}
+                            pais_a={g.db?.pais_a ?? null}
+                            pais_b={g.db?.pais_b ?? null}
+                            dt={null}
+                            estadio={null}
+                            resultado={undefined}
+                            placeholder={!g.db}
+                            liveScore={null}
+                            onVerPalpites={() => setModalJogo(g.jogo_numero)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
           </div>
         )
       })}
@@ -468,7 +531,7 @@ function GameCard({
         )}
       </div>
 
-      {placeholder || !pais_a || !pais_b ? (
+      {placeholder ? (
         <div className="text-center py-3 flex-1">
           <span className="text-stone-600 text-sm">A definir</span>
         </div>
@@ -476,11 +539,15 @@ function GameCard({
         <div className="flex-1">
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <TeamWithFlag name={pais_a} />
+              {pais_a
+                ? <TeamWithFlag name={pais_a} />
+                : <span className="text-stone-600 text-sm italic">A definir</span>}
             </div>
             <span className="text-stone-600 text-xs shrink-0">vs</span>
             <div className="flex items-center gap-1.5 min-w-0 justify-end">
-              <TeamWithFlag name={pais_b} />
+              {pais_b
+                ? <TeamWithFlag name={pais_b} />
+                : <span className="text-stone-600 text-sm italic">A definir</span>}
             </div>
           </div>
 
@@ -516,7 +583,7 @@ function GameCard({
         </div>
       )}
 
-      {!placeholder && pais_a && pais_b && (
+      {!placeholder && (pais_a || pais_b) && (
         <button
           onClick={onVerPalpites}
           className="mt-3 pt-3 border-t border-stone-800 w-full flex items-center justify-center gap-1.5 text-xs text-stone-500 hover:text-emerald-400 transition-colors"
