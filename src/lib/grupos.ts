@@ -24,6 +24,7 @@ export function getGrupoDoTime(time: string): string | null {
 
 export function getGrupoDoJogo(jogo: Pick<Jogo, 'pais_a' | 'pais_b' | 'fase'>): string | null {
   if (jogo.fase !== 'Grupos') return null
+  if (!jogo.pais_a || !jogo.pais_b) return null
   const gA = getGrupoDoTime(jogo.pais_a)
   const gB = getGrupoDoTime(jogo.pais_b)
   return gA && gB && gA === gB ? gA : null

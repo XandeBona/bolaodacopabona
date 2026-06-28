@@ -19,8 +19,8 @@ export interface Jogo {
   jogo_numero: number
   fase: string
   grupo: string | null
-  pais_a: string
-  pais_b: string
+  pais_a: string | null
+  pais_b: string | null
   data_hora: string | null
   estadio: string | null
   created_at?: string
@@ -55,12 +55,14 @@ export interface ParsedSheet {
   palpites: Palpite[]
 }
 
-// Scoring system (cumulativo):
-// 1pt por lado do placar acertado
+// ============================================================
+// FASE DE GRUPOS (jogos 1–72): máx 10 pts por jogo
+// 1pt por gol_a acertado
+// 1pt por gol_b acertado
 // 5pt por resultado (vitória/empate) acertado
-// 3pt bônus por placar exato
-// Total máx = 1+1+5+3 = 10
-export function calcularPontos(palpite: Palpite, resultado: Resultado): number {
+// 3pt bônus por placar exato (ou penalti exato se houver)
+// ============================================================
+function calcularPontosGrupo(palpite: Palpite, resultado: Resultado): number {
   const golsA = palpite.gol_a
   const golsB = palpite.gol_b
   const resA = resultado.gol_a
@@ -87,4 +89,97 @@ export function calcularPontos(palpite: Palpite, resultado: Resultado): number {
   }
 
   return pontos
+}
+
+// ============================================================
+// FASE MATA-MATA (jogos 73+): máx 20 pts por jogo
+//
+// resultado é opcional — sem ele, calcula só pontos de confronto
+//
+// BÔNUS DE CONFRONTO (conta mesmo sem resultado):
+//   +10 acertou as duas equipes
+//   +5  acertou ao menos uma equipe na posição correta
+//   -1  punição por não acertar a outra equipe
+//
+// PONTUAÇÃO DE PLACAR (só com resultado):
+//   +1  acertou gols da equipe A (só se pais_a correto)
+//   +1  acertou gols da equipe B (só se pais_b correto)
+//   +5  acertou o resultado (vitória/empate)
+//   +3  bônus placar exato (só se acertou ambas equipes)
+// ============================================================
+function calcularPontosMataMAta(
+  palpite: Palpite,
+  resultado: Resultado | null,
+  jogoReal: { pais_a: string | null; pais_b: string | null }
+): number {
+  const paisAReal = jogoReal.pais_a
+  const paisBReal = jogoReal.pais_b
+
+  if (!paisAReal || !paisBReal) return 0
+
+  const acertouA = palpite.pais_a === paisAReal
+  const acertouB = palpite.pais_b === paisBReal
+  const acertouAmbos = acertouA && acertouB
+  const acertouAoMenosUm = acertouA || acertouB
+
+  // Sem acerto de equipe = zero pontos
+  if (!acertouAoMenosUm) return 0
+
+  let pontos = 0
+
+  // Bônus de confronto
+  if (acertouAmbos) {
+    pontos += 10
+  } else {
+    pontos += 5
+    // punição de -1 só aplicada se placar exato (tratada abaixo)
+  }
+
+  // Pontuação de placar — só conta com resultado
+  if (resultado) {
+    const golsA = palpite.gol_a
+    const golsB = palpite.gol_b
+    const resA = resultado.gol_a
+    const resB = resultado.gol_b
+
+    if (acertouA && golsA === resA) pontos += 1
+    if (acertouB && golsB === resB) pontos += 1
+
+    const palpiteOutcome = golsA > golsB ? 'A' : golsB > golsA ? 'B' : 'E'
+    const resOutcome = resA > resB ? 'A' : resB > resA ? 'B' : 'E'
+
+    if (palpiteOutcome === resOutcome) pontos += 5
+
+    // Bônus placar exato
+    if (golsA === resA && golsB === resB) {
+      if (!acertouAmbos) pontos -= 1 // punição por não acertar a outra equipe
+      if (resultado.penalti_a !== null && palpite.penalti_a !== null) {
+        if (palpite.penalti_a === resultado.penalti_a && palpite.penalti_b === resultado.penalti_b) {
+          pontos += 3
+        }
+      } else {
+        pontos += 3
+      }
+    }
+  }
+
+  return pontos
+}
+
+// ============================================================
+// FUNÇÃO PRINCIPAL
+// Para mata-mata, passa o jogo real via parâmetro opcional
+// resultado também é opcional para calcular só confronto
+// ============================================================
+export function calcularPontos(
+  palpite: Palpite,
+  resultado: Resultado | null,
+  jogoReal?: { pais_a: string | null; pais_b: string | null }
+): number {
+  if (palpite.jogo_numero >= 73) {
+    const jogo = jogoReal ?? { pais_a: palpite.pais_a, pais_b: palpite.pais_b }
+    return calcularPontosMataMAta(palpite, resultado, jogo)
+  }
+  if (!resultado) return 0
+  return calcularPontosGrupo(palpite, resultado)
 }

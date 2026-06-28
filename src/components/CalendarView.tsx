@@ -47,6 +47,7 @@ function PalpitesModal({
   onClose: () => void
 }) {
   const palpitesDoJogo = palpites.filter((p) => p.jogo_numero === jogoNumero)
+  const jogoReal = { pais_a, pais_b }
 
   return (
     <div
@@ -84,20 +85,20 @@ function PalpitesModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {palpitesDoJogo
                 .sort((a, b) => {
-                  const pa = resultado ? calcularPontos(a, resultado) ?? 0 : 0
-                  const pb = resultado ? calcularPontos(b, resultado) ?? 0 : 0
+                  const pa = resultado ? calcularPontos(a, resultado, jogoReal) ?? 0 : 0
+                  const pb = resultado ? calcularPontos(b, resultado, jogoReal) ?? 0 : 0
                   return pb - pa
                 })
                 .map((p) => {
-                  const pontos = resultado ? calcularPontos(p, resultado) : null
+                  const pontos = resultado ? calcularPontos(p, resultado, jogoReal) : null
                   return (
                     <div
                       key={p.nome_participante}
                       className={clsx(
                         'flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all',
-                        pontos === 10
+                        pontos === 20
                           ? 'bg-amber-950/20 border-amber-500/30'
-                          : pontos !== null && pontos >= 5
+                          : pontos !== null && pontos >= 10
                             ? 'bg-emerald-950/10 border-emerald-500/20'
                             : 'bg-stone-800/50 border-stone-700/50'
                       )}
