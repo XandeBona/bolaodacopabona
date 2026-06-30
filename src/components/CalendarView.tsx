@@ -97,10 +97,12 @@ function PalpitesModal({
                       className={clsx(
                         'flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all',
                         pontos === 20
-                          ? 'bg-amber-950/20 border-amber-500/30'
+                          ? 'bg-purple-950/20 border-purple-500/30'
                           : pontos !== null && pontos >= 10
-                            ? 'bg-emerald-950/10 border-emerald-500/20'
-                            : 'bg-stone-800/50 border-stone-700/50'
+                            ? 'bg-amber-950/20 border-amber-500/30'
+                            : pontos !== null && pontos >= 5
+                              ? 'bg-emerald-950/10 border-emerald-500/20'
+                              : 'bg-stone-800/50 border-stone-700/50'
                       )}
                     >
                       <div className="flex flex-col gap-1 min-w-0">
