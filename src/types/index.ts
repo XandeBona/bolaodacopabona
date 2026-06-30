@@ -60,7 +60,8 @@ export interface ParsedSheet {
 // 1pt por gol_a acertado
 // 1pt por gol_b acertado
 // 5pt por resultado (vitória/empate) acertado
-// 3pt bônus por placar exato (ou penalti exato se houver)
+// 3pt bônus por placar exato
+// Pênaltis não contam para pontuação
 // ============================================================
 function calcularPontosGrupo(palpite: Palpite, resultado: Resultado): number {
   const golsA = palpite.gol_a
@@ -79,13 +80,7 @@ function calcularPontosGrupo(palpite: Palpite, resultado: Resultado): number {
   if (palpiteOutcome === resOutcome) pontos += 5
 
   if (golsA === resA && golsB === resB) {
-    if (resultado.penalti_a !== null && palpite.penalti_a !== null) {
-      if (palpite.penalti_a === resultado.penalti_a && palpite.penalti_b === resultado.penalti_b) {
-        pontos += 3
-      }
-    } else {
-      pontos += 3
-    }
+    pontos += 3
   }
 
   return pontos
@@ -109,6 +104,8 @@ function calcularPontosGrupo(palpite: Palpite, resultado: Resultado): number {
 //   +1  acertou gols da equipe A (só se pais_a correto)
 //   +1  acertou gols da equipe B (só se pais_b correto)
 //   +5  acertou o resultado (vitória/empate)
+//
+// Pênaltis não contam para pontuação em nenhum caso
 // ============================================================
 function calcularPontosMataMAta(
   palpite: Palpite,
@@ -125,7 +122,6 @@ function calcularPontosMataMAta(
   const acertouAmbos = acertouA && acertouB
   const acertouAoMenosUm = acertouA || acertouB
 
-  // Sem acerto de equipe = zero pontos
   if (!acertouAoMenosUm) return 0
 
   let pontos = 0
@@ -147,17 +143,9 @@ function calcularPontosMataMAta(
     const placardExato = golsA === resA && golsB === resB
 
     if (placardExato) {
-      // Placar exato: bônus +10, punição -1 se não acertou os dois times
       if (!acertouAmbos) pontos -= 1
-      if (resultado.penalti_a !== null && palpite.penalti_a !== null) {
-        if (palpite.penalti_a === resultado.penalti_a && palpite.penalti_b === resultado.penalti_b) {
-          pontos += 10
-        }
-      } else {
-        pontos += 10
-      }
+      pontos += 10
     } else {
-      // Não é placar exato — pontos normais de gols e resultado
       if (acertouA && golsA === resA) pontos += 1
       if (acertouB && golsB === resB) pontos += 1
 
